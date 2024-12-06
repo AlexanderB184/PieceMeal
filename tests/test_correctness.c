@@ -198,7 +198,7 @@ typedef struct {
 } perft_test_t;
 
 void test_perft(perft_test_t test_case) {
-  printf("TESTING %s\n", test_case.position);
+  printf("testing %s to depth %d\n", test_case.position, test_case.depth_of_largest_row);
   load_position(&CHESS_STATE, test_case.position);
   for (int i = test_case.depth_of_first_row;
        i <= test_case.depth_of_largest_row; i++) {
@@ -206,14 +206,14 @@ void test_perft(perft_test_t test_case) {
     if (!compare_perft_results(
             got, test_case.results_table[i - test_case.depth_of_first_row],
             test_case.flags)) {
-      printf("\nFAILED DEPTH %d expected:\n\n", i);
+      printf("failed at depth %d expected:\n\n", i);
       print_perft_results(
           test_case.results_table[i - test_case.depth_of_first_row],
           test_case.flags);
       printf("\ngot:\n\n");
       print_perft_results(got, test_case.flags);
     } else {
-      printf("\nPASSED %d\n", i);
+      printf("passed %d\n", i);
     }
   }
 }

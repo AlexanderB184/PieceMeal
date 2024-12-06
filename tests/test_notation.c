@@ -24,6 +24,7 @@ void make_random_str(char* buffer, int max_size) {
     buffer[len] = '\0';
 }
 
+// fuzzing for read_algebraic notation
 int test1() {
     char buffer[1028];
     chess_state_t chess_state = {0};
@@ -44,6 +45,8 @@ int test1() {
     return 0;
 }
 
+
+
 int test2() {
     char buffer[1028];
     chess_state_t chess_state = {0};
@@ -58,7 +61,6 @@ int test2() {
             printf("couldn't write \'%s\' in algebraic notation\n", out);
             continue;
         }
-        printf("%s\n", out);
         move_t Move;
         outv = read_algebraic_notation(out, sizeof(buffer), &chess_state, &Move);
         if (outv == -1) {
@@ -72,6 +74,7 @@ int test2() {
     return 0;
 }
 
+// fuzzing for write algebraic notation
 void test3(chess_state_t* chess_state, int depth) {
     if (depth <= 0) return;
     move_t moves[256];
@@ -109,5 +112,7 @@ void test3(chess_state_t* chess_state, int depth) {
 int main() {
     chess_state_t chess_state = {0};
     load_position(&chess_state, "K7/5R2/2R5/7R/p1p3R1/4k1p1/1P1ppp1P/1R2B3 w - - 0 1");
+    test1();
+    test2();
     test3(&chess_state, 3);
 }

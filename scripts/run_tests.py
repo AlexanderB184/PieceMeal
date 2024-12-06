@@ -33,12 +33,12 @@ def compile_and_run_test(test: Test):
         build_lib.NAME_FLAG,
         target_file
     ])
-    print(f"Executing: {cmd}")
+    #print(f"Executing: {cmd}")
     result = system(cmd)
     if result != 0:
         print(f"Failed to compile {test.name}.")
         exit(1)
-    print(f"Compiled {test.name} successfully. Running it now...")
+    #print(f"Compiled {test.name} successfully. Running it now...")
     cmd = " ".join([target_file, *test.args])
     system(cmd)
 
