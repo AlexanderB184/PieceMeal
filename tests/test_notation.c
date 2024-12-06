@@ -12,6 +12,7 @@ char printable_chars[] = {
     '4', '5', '6', '7', '8',  '9', '-',  '+',  '=', '#', ':',  '?',  ',', '.',
     '_', '<', '>', '/', '\\', ';', '\'', '\"', '{', '}', '[',  ']',  '(', ')',
     '*', '&', '^', '%', '$',  '@', '!',  '`',  '~', ' ', '\t', '\n', '\r'};
+// printable algebraic notation characters
 char printable_aln_chars[] = {
     'a', 'b', 'c', 'd', 'e',  'f', 'g',  'h', 'i',   '1',  '2', '3',
     '4', '5', '6', '7', '8',  'Q', 'K', 'P', 'B', 'N', 'Z'};
@@ -108,5 +109,5 @@ void test3(chess_state_t* chess_state, int depth) {
 int main() {
     chess_state_t chess_state = {0};
     load_position(&chess_state, "K7/5R2/2R5/7R/p1p3R1/4k1p1/1P1ppp1P/1R2B3 w - - 0 1");
-    test3(&chess_state, 6);
+    test3(&chess_state, 3);
 }

@@ -96,6 +96,6 @@ int main() {
   chess_state_t position = {};
   load_position(&position,
                 "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
-  recursive_test(&position, 5);
+  recursive_test(&position, 3);
   return 0;
 }

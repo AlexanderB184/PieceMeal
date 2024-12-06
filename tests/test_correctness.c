@@ -199,6 +199,7 @@ typedef struct {
 
 void test_perft(perft_test_t test_case) {
   printf("TESTING %s\n", test_case.position);
+  load_position(&CHESS_STATE, test_case.position);
   for (int i = test_case.depth_of_first_row;
        i <= test_case.depth_of_largest_row; i++) {
     perft_results_t got = perft(&CHESS_STATE, i, test_case.flags);

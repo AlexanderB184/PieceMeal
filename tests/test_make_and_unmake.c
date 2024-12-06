@@ -49,7 +49,7 @@ void test(const char* fen_string) {
   testno++;
   load_position(&chess_state, fen_string);
   test_recursive(6);
-  printf("completed test %d!!!\n", testno);
+  printf("passed %d\n", testno);
 }
 
 int main() {
