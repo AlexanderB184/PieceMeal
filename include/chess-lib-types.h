@@ -108,16 +108,6 @@ typedef enum {
 
 } move_flags_t;
 
-// board stored in 0x88 form
-// https://www.chessprogramming.org/0x88
-typedef struct {
-  piece_t board_0x88[16 * 16];
-  sq0x88_t enpassent;
-  int move_number, half_move_clock;
-  int black_to_move;
-  castle_rights_t rights;
-} board_t;
-
 enum {
   MAX_PAWNS = 8,
   MAX_KNIGHTS = 2 + 8,
