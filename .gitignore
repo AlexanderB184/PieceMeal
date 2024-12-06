@@ -1,0 +1,9 @@
+# Object files
+*.o
+*.so
+*.dll
+*.out
+*.bin
+
+__pycache__
+.vscode
