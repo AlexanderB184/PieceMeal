@@ -7,3 +7,7 @@
 
 __pycache__
 .vscode
+_deps
+CMakeFiles
+CMakeCache.txt
+build/*
