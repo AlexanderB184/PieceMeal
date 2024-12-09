@@ -115,48 +115,6 @@ BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER    
 BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
 };
 
-static const piece_list_t white_start_piece_list = {
-    .king_square = e1,
-    .pawn_list = {a2, b2, c2, d2, e2, f2, g2, h2},
-    .pawn_count = 8,
-    .knight_list = {b1, g1},
-    .knight_count = 2,
-    .light_bishop_list = {c1},
-    .light_bishop_count = 1,
-    .dark_bishop_list = {f1},
-    .dark_bishop_count = 1,
-    .rook_list = {a1, h1},
-    .rook_count = 2,
-    .queen_list = {d1},
-    .queen_count = 1,
-    .indices_list = {0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 2, 3, 4, 5, 6, 7,
-                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-};
-
-static const piece_list_t black_start_piece_list = {
-    .king_square = e8,
-    .pawn_list = {a7, b7, c7, d7, e7, f7, g7, h7},
-    .pawn_count = 8,
-    .knight_list = {b8, g8},
-    .knight_count = 2,
-    .light_bishop_list = {f8},
-    .light_bishop_count = 1,
-    .dark_bishop_list = {c8},
-    .dark_bishop_count = 1,
-    .rook_list = {a8, h8},
-    .rook_count = 2,
-    .queen_list = {d8},
-    .queen_count = 1,
-    .indices_list = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                     0, 1, 2, 3, 4, 5, 6, 7, 0, 0, 0, 0, 0, 0, 1, 1},
-};
-
-
-
 enum {
   increment_vector_size = 240,
   king_increments_count = 8,
