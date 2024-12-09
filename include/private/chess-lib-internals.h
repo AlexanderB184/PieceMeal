@@ -27,7 +27,7 @@ void update_half_move_clock(chess_state_t* chess_state, move_t move);
 
 void update_turn(chess_state_t* chess_state);
 
-  void update_check(chess_state_t*chess_state, move_t move);
+void update_check(chess_state_t*chess_state, move_t move);
 
 void remove_piece(chess_state_t* chess_state, sq0x88_t target);
 

@@ -109,8 +109,9 @@ void update_turn(chess_state_t* chess_state) {
   SWAP(sq0x88_t, chess_state->up_increment, chess_state->down_increment);
 }
 
-#include <stdio.h>
 void make_move(chess_state_t* chess_state, move_t move) {
+  #ifdef DEBUG
+  #include <stdio.h>
   if (is_null_move(move)) {
     trace_ply_stack(chess_state);
     printf("illegal move detected (null move)");
@@ -131,6 +132,7 @@ void make_move(chess_state_t* chess_state, move_t move) {
     printf("illegal move detected (off the board)");
     abort();
   }
+  #endif
   push_ply_stack(chess_state, move);
   update_half_move_clock(chess_state, move);
   update_board(chess_state, move);

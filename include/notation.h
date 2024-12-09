@@ -1,9 +1,9 @@
 #ifndef CHESS_NOTATION_H
 #define CHESS_NOTATION_H
 
-#include "chess-lib-inlines.h"
 #include "chess-lib-types.h"
 
+// returns index of first non white space character
 long skip_whitespace(const char* buffer);
 
 // writes a square in format file rank, e.g. a1, h4, c8
@@ -18,18 +18,22 @@ long write_piece(char* buffer, size_t buffer_size, piece_t piece);
 // reads the letter code for a piece, e.g. P, K, N
 long read_piece(const char* buffer, size_t buffer_size, piece_t* piece);
 
+// write to buffer in algebraic notation
+// e.g. e8=Q or Nb3
 long write_algebraic_notation(char* buffer, size_t buffer_size,
                               chess_state_t* chess_state, move_t move);
 
+// read from buffer a move in algebraic notation
+// e.g. e8=Q or Nb3
 long read_algebraic_notation(const char* buffer, size_t buffer_size,
                              const chess_state_t* chess_state, move_t* move);
 
 // write to buffer in long algebraic notation
-// e.g. e7e9Q or e1b3
+// e.g. e7e8Q or e1b3
 long write_long_algebraic_notation(char* buffer, size_t buffer_size,
                                    move_t move);
 // read from buffer a move in long algebraic notation
-// e.g. e7e9Q or e1b3
+// e.g. e7e8Q or e1b3
 long read_long_algebraic_notation(const char* buffer, size_t buffer_size,
                                   const chess_state_t* chess_state,
                                   move_t* move);
@@ -46,6 +50,7 @@ long write_movetext_debug(char* buffer, size_t buffer_size,
                     const chess_state_t* chess_state);
 
 // writes the pgn out to a buffer
+// event, site, date, round, names, and fen are all optional parameters, if set to NULL they will be left empty in pgn.
 long write_pgn(char* buffer, size_t buffer_size,
                const chess_state_t* chess_state, const char* event,
                const char* site, const char* date, const char* round,

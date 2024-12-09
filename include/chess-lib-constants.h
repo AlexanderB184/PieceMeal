@@ -3,76 +3,81 @@
 
 #include "chess-lib-types.h"
 
-enum { rank_size = 16, file_size = 16, left_border = 0, top_border = 0 };
 
-#define square_from_rankfile(file, rank) \
-  ((rank) + top_border) * file_size + left_border + (file)
+#define RANK_SIZE 16
+#define FILE_SIZE 16
+#define LEFT_BORDER 0
+#define TOP_BORDER 0
 
+#define SQUARE_FROM_RANKFILE(file, rank) \
+  ((rank) + TOP_BORDER) * FILE_SIZE + LEFT_BORDER + (file)
+
+  
 enum {
-  a1 = square_from_rankfile(0, 0),
-  a2 = square_from_rankfile(0, 1),
-  a3 = square_from_rankfile(0, 2),
-  a4 = square_from_rankfile(0, 3),
-  a5 = square_from_rankfile(0, 4),
-  a6 = square_from_rankfile(0, 5),
-  a7 = square_from_rankfile(0, 6),
-  a8 = square_from_rankfile(0, 7),
-  b1 = square_from_rankfile(1, 0),
-  b2 = square_from_rankfile(1, 1),
-  b3 = square_from_rankfile(1, 2),
-  b4 = square_from_rankfile(1, 3),
-  b5 = square_from_rankfile(1, 4),
-  b6 = square_from_rankfile(1, 5),
-  b7 = square_from_rankfile(1, 6),
-  b8 = square_from_rankfile(1, 7),
-  c1 = square_from_rankfile(2, 0),
-  c2 = square_from_rankfile(2, 1),
-  c3 = square_from_rankfile(2, 2),
-  c4 = square_from_rankfile(2, 3),
-  c5 = square_from_rankfile(2, 4),
-  c6 = square_from_rankfile(2, 5),
-  c7 = square_from_rankfile(2, 6),
-  c8 = square_from_rankfile(2, 7),
-  d1 = square_from_rankfile(3, 0),
-  d2 = square_from_rankfile(3, 1),
-  d3 = square_from_rankfile(3, 2),
-  d4 = square_from_rankfile(3, 3),
-  d5 = square_from_rankfile(3, 4),
-  d6 = square_from_rankfile(3, 5),
-  d7 = square_from_rankfile(3, 6),
-  d8 = square_from_rankfile(3, 7),
-  e1 = square_from_rankfile(4, 0),
-  e2 = square_from_rankfile(4, 1),
-  e3 = square_from_rankfile(4, 2),
-  e4 = square_from_rankfile(4, 3),
-  e5 = square_from_rankfile(4, 4),
-  e6 = square_from_rankfile(4, 5),
-  e7 = square_from_rankfile(4, 6),
-  e8 = square_from_rankfile(4, 7),
-  f1 = square_from_rankfile(5, 0),
-  f2 = square_from_rankfile(5, 1),
-  f3 = square_from_rankfile(5, 2),
-  f4 = square_from_rankfile(5, 3),
-  f5 = square_from_rankfile(5, 4),
-  f6 = square_from_rankfile(5, 5),
-  f7 = square_from_rankfile(5, 6),
-  f8 = square_from_rankfile(5, 7),
-  g1 = square_from_rankfile(6, 0),
-  g2 = square_from_rankfile(6, 1),
-  g3 = square_from_rankfile(6, 2),
-  g4 = square_from_rankfile(6, 3),
-  g5 = square_from_rankfile(6, 4),
-  g6 = square_from_rankfile(6, 5),
-  g7 = square_from_rankfile(6, 6),
-  g8 = square_from_rankfile(6, 7),
-  h1 = square_from_rankfile(7, 0),
-  h2 = square_from_rankfile(7, 1),
-  h3 = square_from_rankfile(7, 2),
-  h4 = square_from_rankfile(7, 3),
-  h5 = square_from_rankfile(7, 4),
-  h6 = square_from_rankfile(7, 5),
-  h7 = square_from_rankfile(7, 6),
-  h8 = square_from_rankfile(7, 7),
+  a1 = SQUARE_FROM_RANKFILE(0, 0),
+  a2 = SQUARE_FROM_RANKFILE(0, 1),
+  a3 = SQUARE_FROM_RANKFILE(0, 2),
+  a4 = SQUARE_FROM_RANKFILE(0, 3),
+  a5 = SQUARE_FROM_RANKFILE(0, 4),
+  a6 = SQUARE_FROM_RANKFILE(0, 5),
+  a7 = SQUARE_FROM_RANKFILE(0, 6),
+  a8 = SQUARE_FROM_RANKFILE(0, 7),
+  b1 = SQUARE_FROM_RANKFILE(1, 0),
+  b2 = SQUARE_FROM_RANKFILE(1, 1),
+  b3 = SQUARE_FROM_RANKFILE(1, 2),
+  b4 = SQUARE_FROM_RANKFILE(1, 3),
+  b5 = SQUARE_FROM_RANKFILE(1, 4),
+  b6 = SQUARE_FROM_RANKFILE(1, 5),
+  b7 = SQUARE_FROM_RANKFILE(1, 6),
+  b8 = SQUARE_FROM_RANKFILE(1, 7),
+  c1 = SQUARE_FROM_RANKFILE(2, 0),
+  c2 = SQUARE_FROM_RANKFILE(2, 1),
+  c3 = SQUARE_FROM_RANKFILE(2, 2),
+  c4 = SQUARE_FROM_RANKFILE(2, 3),
+  c5 = SQUARE_FROM_RANKFILE(2, 4),
+  c6 = SQUARE_FROM_RANKFILE(2, 5),
+  c7 = SQUARE_FROM_RANKFILE(2, 6),
+  c8 = SQUARE_FROM_RANKFILE(2, 7),
+  d1 = SQUARE_FROM_RANKFILE(3, 0),
+  d2 = SQUARE_FROM_RANKFILE(3, 1),
+  d3 = SQUARE_FROM_RANKFILE(3, 2),
+  d4 = SQUARE_FROM_RANKFILE(3, 3),
+  d5 = SQUARE_FROM_RANKFILE(3, 4),
+  d6 = SQUARE_FROM_RANKFILE(3, 5),
+  d7 = SQUARE_FROM_RANKFILE(3, 6),
+  d8 = SQUARE_FROM_RANKFILE(3, 7),
+  e1 = SQUARE_FROM_RANKFILE(4, 0),
+  e2 = SQUARE_FROM_RANKFILE(4, 1),
+  e3 = SQUARE_FROM_RANKFILE(4, 2),
+  e4 = SQUARE_FROM_RANKFILE(4, 3),
+  e5 = SQUARE_FROM_RANKFILE(4, 4),
+  e6 = SQUARE_FROM_RANKFILE(4, 5),
+  e7 = SQUARE_FROM_RANKFILE(4, 6),
+  e8 = SQUARE_FROM_RANKFILE(4, 7),
+  f1 = SQUARE_FROM_RANKFILE(5, 0),
+  f2 = SQUARE_FROM_RANKFILE(5, 1),
+  f3 = SQUARE_FROM_RANKFILE(5, 2),
+  f4 = SQUARE_FROM_RANKFILE(5, 3),
+  f5 = SQUARE_FROM_RANKFILE(5, 4),
+  f6 = SQUARE_FROM_RANKFILE(5, 5),
+  f7 = SQUARE_FROM_RANKFILE(5, 6),
+  f8 = SQUARE_FROM_RANKFILE(5, 7),
+  g1 = SQUARE_FROM_RANKFILE(6, 0),
+  g2 = SQUARE_FROM_RANKFILE(6, 1),
+  g3 = SQUARE_FROM_RANKFILE(6, 2),
+  g4 = SQUARE_FROM_RANKFILE(6, 3),
+  g5 = SQUARE_FROM_RANKFILE(6, 4),
+  g6 = SQUARE_FROM_RANKFILE(6, 5),
+  g7 = SQUARE_FROM_RANKFILE(6, 6),
+  g8 = SQUARE_FROM_RANKFILE(6, 7),
+  h1 = SQUARE_FROM_RANKFILE(7, 0),
+  h2 = SQUARE_FROM_RANKFILE(7, 1),
+  h3 = SQUARE_FROM_RANKFILE(7, 2),
+  h4 = SQUARE_FROM_RANKFILE(7, 3),
+  h5 = SQUARE_FROM_RANKFILE(7, 4),
+  h6 = SQUARE_FROM_RANKFILE(7, 5),
+  h7 = SQUARE_FROM_RANKFILE(7, 6),
+  h8 = SQUARE_FROM_RANKFILE(7, 7),
 };
 
 static const move_t null_move = {0, 0, 0};
@@ -116,12 +121,12 @@ BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER    
 };
 
 enum {
-  increment_vector_size = 240,
-  king_increments_count = 8,
-  queen_increments_count = 8,
-  knight_increments_count = 8,
-  bishop_increments_count = 4,
-  rook_increments_count = 4,
+  INCREMENT_VECTOR_SIZE = 240,
+  KING_INCREMENTS_COUNT = 8,
+  QUEEN_INCREMENTS_COUNT = 8,
+  KNIGHT_INCREMENTS_COUNT = 8,
+  BISHOP_INCREMENTS_COUNT = 4,
+  ROOK_INCREMENTS_COUNT = 4,
 };
 
 // interface for increment vectors
@@ -136,7 +141,7 @@ sq0x88_t knight_increment(sq0x88_t from, sq0x88_t to);
 
 sq0x88_t king_increment(sq0x88_t from, sq0x88_t to);
 
-static const sq0x88_t queen_increment_vector[increment_vector_size] = {
+static const sq0x88_t queen_increment_vector[INCREMENT_VECTOR_SIZE] = {
     239,0,  0,  0,  0,  0,  0,  240,0,  0,  0,  0,  0,  0,  241,0,  
     0,  239,0,  0,  0,  0,  0,  240,0,  0,  0,  0,  0,  241,0,  0,  
     0,  0,  239,0,  0,  0,  0,  240,0,  0,  0,  0,  241,0,  0,  0,  
@@ -154,7 +159,7 @@ static const sq0x88_t queen_increment_vector[increment_vector_size] = {
     15, 0,  0,  0,  0,  0,  0,  16, 0,  0,  0,  0,  0,  0,  17, 0,  
 };
 
-static const sq0x88_t rook_increment_vector[increment_vector_size] = {
+static const sq0x88_t rook_increment_vector[INCREMENT_VECTOR_SIZE] = {
     0,  0,  0,  0,  0,  0,  0,  240,0,  0,  0,  0,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  240,0,  0,  0,  0,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  240,0,  0,  0,  0,  0,  0,  0,  0,
@@ -172,7 +177,7 @@ static const sq0x88_t rook_increment_vector[increment_vector_size] = {
     0,  0,  0,  0,  0,  0,  0,  16, 0,  0,  0,  0,  0,  0,  0,  0,
 };
 
-static const sq0x88_t bishop_increment_vector[increment_vector_size] = {
+static const sq0x88_t bishop_increment_vector[INCREMENT_VECTOR_SIZE] = {
     239,0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  241,0,  
     0,  239,0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  241,0,  0,  
     0,  0,  239,0,  0,  0,  0,  0,  0,  0,  0,  0,  241,0,  0,  0,  
@@ -190,7 +195,7 @@ static const sq0x88_t bishop_increment_vector[increment_vector_size] = {
     15, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  17, 0,  
 };
 
-static const sq0x88_t knight_increment_vector[increment_vector_size] = {
+static const sq0x88_t knight_increment_vector[INCREMENT_VECTOR_SIZE] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -207,7 +212,7 @@ static const sq0x88_t knight_increment_vector[increment_vector_size] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 };
-static const sq0x88_t king_increment_vector[increment_vector_size] = {
+static const sq0x88_t king_increment_vector[INCREMENT_VECTOR_SIZE] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -228,11 +233,11 @@ static const sq0x88_t king_increment_vector[increment_vector_size] = {
 static const sq0x88_t white_pawn_push_inc = 16;
 static const sq0x88_t black_pawn_push_inc = 240;
 
-static const sq0x88_t king_increments_list[king_increments_count] = {1, 255, 240, 16, 241, 239, 15, 17};
-static const sq0x88_t knight_increments_list[knight_increments_count] = {18, 14, 33, 31, 242, 238, 225, 223};
-static const sq0x88_t queen_increments_list[queen_increments_count] = {1, 255, 240, 16, 241, 239, 15, 17};
-static const sq0x88_t bishop_increments_list[bishop_increments_count] = {241, 239, 15, 17};
-static const sq0x88_t rook_increments_list[rook_increments_count] = {1, 255, 240, 16};
+static const sq0x88_t king_increments_list[KING_INCREMENTS_COUNT] = {1, 255, 240, 16, 241, 239, 15, 17};
+static const sq0x88_t knight_increments_list[KNIGHT_INCREMENTS_COUNT] = {18, 14, 33, 31, 242, 238, 225, 223};
+static const sq0x88_t queen_increments_list[QUEEN_INCREMENTS_COUNT] = {1, 255, 240, 16, 241, 239, 15, 17};
+static const sq0x88_t bishop_increments_list[BISHOP_INCREMENTS_COUNT] = {241, 239, 15, 17};
+static const sq0x88_t rook_increments_list[ROOK_INCREMENTS_COUNT] = {1, 255, 240, 16};
 
 static const zobrist_t zobrist_black_to_move = 0x4cca36c01e2261e5;
 

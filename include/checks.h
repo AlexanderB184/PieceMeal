@@ -12,6 +12,7 @@ int is_check(const chess_state_t* chess_state);
 // returns true if two (or more) pieces are threatening the king
 int is_double_check(const chess_state_t* chess_state);
 
+// returns true if the king is checked through a discovered attack
 int is_discover_check(const chess_state_t* chess_state);
 
 // returns the square of the checking piece, if there is no checking piece it
