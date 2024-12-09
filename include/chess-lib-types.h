@@ -134,7 +134,7 @@ typedef struct {
 
 typedef struct move_t {
   sq0x88_t from, to;
-  uint16_t bitpacked_data;
+  uint16_t priority_and_flags;
 } move_t;
 
 typedef uint16_t compact_move_t;

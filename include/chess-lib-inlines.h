@@ -10,7 +10,7 @@ static inline sq8x8_t get_from(move_t move) { return move.from; }
 static inline sq8x8_t get_to(move_t move) { return move.to; }
 
 static inline move_flags_t get_flags(move_t move) {
-  return (move_flags_t)(move.bitpacked_data & 0xF);
+  return (move_flags_t)(move.priority_and_flags & 0xF);
 }
 
 static inline int is_capture(move_t move) { return get_flags(move) & CAPTURE; }
@@ -47,11 +47,11 @@ static inline piece_t get_promotes_to(move_t move) {
 }
 
 static inline uint16_t get_priority(move_t move) {
-  return (move.bitpacked_data & 0xFFF0) >> 4;
+  return (move.priority_and_flags & 0xFFF0) >> 4;
 }
 
 static inline move_t set_priority(move_t move, uint16_t prio) {
-  move.bitpacked_data = ((prio << 4) & 0xFFF0) | (move.bitpacked_data & 0x000F);
+  move.priority_and_flags = ((prio << 4) & 0xFFF0) | (move.priority_and_flags & 0x000F);
   return move;
 }
 
@@ -62,8 +62,12 @@ static inline int is_null_move(move_t move) {
 
 
 // move constructor
-static inline move_t move(sq8x8_t from, sq8x8_t to, uint16_t flags) {
-  return (move_t){from, to, flags & 0xF};
+static inline move_t move(sq8x8_t from, sq8x8_t to, int flags) {
+  #ifdef __cplusplus
+  return move_t{from, to, (uint16_t)(flags & 0xF)};
+  #else
+  return (move_t){from, to, (uint16_t)(flags & 0xF)};
+  #endif
 }
 
 // board interface
@@ -151,7 +155,7 @@ static inline int compare_moves(move_t lhs, move_t rhs) {
 }
 
 static inline compact_move_t compress_move(move_t move) {
-  return sq0x88_to_sq8x8(move.from) | (sq0x88_to_sq8x8(move.to) << 6) | ((move.bitpacked_data & 0xF) << 12);
+  return sq0x88_to_sq8x8(move.from) | (sq0x88_to_sq8x8(move.to) << 6) | ((move.priority_and_flags & 0xF) << 12);
 }
 
 static inline move_t uncompress_move(compact_move_t compact_move) {
