@@ -119,7 +119,7 @@ void update_check(chess_state_t* chess_state, move_t move) {
   }
 }
 
-int under_attack(const chess_state_t* chess_state, sq0x88_t square,
+int is_under_attack(const chess_state_t* chess_state, sq0x88_t square,
                  piece_t player) {
   // king moves
 

@@ -3,7 +3,6 @@
 
 #ifdef __cplusplus
 extern "C" {
-//namespace chess {
 #endif
 
 #include "checks.h"
@@ -19,7 +18,6 @@ extern "C" {
 #include "notation.h"
 
 #ifdef __cplusplus
-//} // namespace chess
 }
 #endif
 

@@ -85,12 +85,12 @@ void trace_ply_stack(const chess_state_t* chess_state) {
 int is_legal_king_move(const chess_state_t* chess_state, move_t move) {
   sq0x88_t from = get_from(move);
   sq0x88_t to = get_to(move);
-  if (under_attack(chess_state, to, chess_state->enemy_colour)) return 0;
+  if (is_under_attack(chess_state, to, chess_state->enemy_colour)) return 0;
   if (is_queen_castle(move)) {
-    return !under_attack(chess_state, from - 1, chess_state->enemy_colour);
+    return !is_under_attack(chess_state, from - 1, chess_state->enemy_colour);
   }
   if (is_king_castle(move)) {
-    return !under_attack(chess_state, from + 1, chess_state->enemy_colour);
+    return !is_under_attack(chess_state, from + 1, chess_state->enemy_colour);
   }
   return 1;
 }

@@ -4,7 +4,7 @@
 #include "chess-lib-types.h"
 
 // returns true if the players piece at square can be pseudo captured
-int under_attack(const chess_state_t* chess_state, sq0x88_t square, piece_t player);
+int is_under_attack(const chess_state_t* chess_state, sq0x88_t square, piece_t player);
 
 // returns true if there is atleast one piece threatening the king
 int is_check(const chess_state_t* chess_state);
