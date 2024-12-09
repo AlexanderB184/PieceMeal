@@ -13,7 +13,6 @@ extern "C" {
 #include "game-over.h"
 #include "move-generation.h"
 #include "move-is-legal.h"
-#include "move.h"
 #include "zobrist.h"
 #include "notation.h"
 
