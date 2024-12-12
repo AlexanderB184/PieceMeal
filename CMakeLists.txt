@@ -32,14 +32,17 @@ FetchContent_MakeAvailable(catch2)
 add_executable(test_perft tests/perft.cpp)
 add_executable(test_is_check tests/is_check.cpp)
 add_executable(test_is_pseudo_legal tests/pseudo_legal.cpp)
+add_executable(test_is_legal tests/is_legal.cpp)
 
 # Link the test executables with Catch2
 target_link_libraries(test_perft PRIVATE Catch2::Catch2WithMain chess)
 target_link_libraries(test_is_check PRIVATE Catch2::Catch2WithMain chess)
 target_link_libraries(test_is_pseudo_legal PRIVATE Catch2::Catch2WithMain chess)
+target_link_libraries(test_is_legal PRIVATE Catch2::Catch2WithMain chess)
 
 include(CTest)
 include(Catch)
 catch_discover_tests(test_perft)
 catch_discover_tests(test_is_check)
 catch_discover_tests(test_is_pseudo_legal)
+catch_discover_tests(test_is_legal)
