@@ -203,9 +203,9 @@ typedef struct {
 } perft_test_t;
 
 const perft_test_t test_cases[] = {
-    {positions[0], results_tables[0], 0, 5, PERFT_ALL},
-    {positions[1], results_tables[1], 1, 5, PERFT_ALL},
-    {positions[2], results_tables[2], 1, 5, PERFT_ALL},
+    {positions[0], results_tables[0], 0, 7, PERFT_ALL},
+    {positions[1], results_tables[1], 1, 7, PERFT_ALL},
+    {positions[2], results_tables[2], 1, 7, PERFT_ALL},
     {positions[3], results_tables[3], 1, 5,
      (perft_active_columns)(PERFT_NODES | PERFT_CAPTURES | PERFT_CASTLES |
                             PERFT_ENPASSENT | PERFT_CHECKS | PERFT_CHECKMATE |

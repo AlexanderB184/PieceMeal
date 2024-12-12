@@ -278,6 +278,9 @@ int is_pseudo_legal(const chess_state_t* chess_state, move_t move) {
 
   sq0x88_t check_square = checking_square(chess_state);
   // capturing checking piece
+  if (is_enpassent(move) && check_square == enpassent_target(chess_state) - chess_state->up_increment) {
+    return 1;
+  }
   if (is_capture(move)) {
     return to == check_square;
   }

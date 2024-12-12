@@ -658,7 +658,7 @@ size_t generate_moves(const chess_state_t* chess_state, move_t* moves) {
 
   return move_count;
 }
-
+/**
 size_t psuedo_legal_knight_move_count(const chess_state_t* chess_state,
 
                                       sq0x88_t from) {
@@ -852,3 +852,4 @@ size_t psuedo_legal_move_count(const chess_state_t* chess_state,
 
   return move_count;
 }
+ */

@@ -5,6 +5,16 @@ project(PieceMeal VERSION 1.0.0)
 
 add_library(chess SHARED src/game-over.c src/increment-vectors.c src/load_position.c src/make_move.c src/move_generation.c src/move_is_legal.c src/notation.c src/piece_list.c src/threats.c src/zobrist.c include/chess-lib.h)
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+    add_compile_options(-O3)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    add_compile_options(/W4 /WX /O2)
+endif()
+
 enable_testing()
 
 include(FetchContent)
@@ -19,49 +29,17 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(catch2)
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic -Werror -O3)
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    add_compile_options(/W4 /WX /O2)
-endif()
+add_executable(test_perft tests/perft.cpp)
+add_executable(test_is_check tests/is_check.cpp)
+add_executable(test_is_pseudo_legal tests/pseudo_legal.cpp)
 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-    message(FATAL_ERROR "In-source builds are not allowed. Please use a separate build directory.")
-endif()
+# Link the test executables with Catch2
+target_link_libraries(test_perft PRIVATE Catch2::Catch2WithMain chess)
+target_link_libraries(test_is_check PRIVATE Catch2::Catch2WithMain chess)
+target_link_libraries(test_is_pseudo_legal PRIVATE Catch2::Catch2WithMain chess)
 
-set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type (Debug or Release)")
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-option(ENABLE_TESTS "Enable building tests" ON)
-option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
-
-if (ENABLE_COVERAGE)
-    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        add_compile_options(--coverage)
-        add_link_options(--coverage)
-    else()
-        message(WARNING "Code coverage is only supported with GCC and Clang")
-    endif()
-endif()
-
-if (ENABLE_TESTS)
-    enable_testing()
-    add_test(NAME Perft COMMAND test_perft)
-endif()
-
-install(TARGETS chess
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin)
-install(DIRECTORY include/ DESTINATION include)
-
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/PieceMealConfigVersion.cmake
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
-
-export(TARGETS chess FILE ${CMAKE_CURRENT_BINARY_DIR}/PieceMealTargets.cmake)
+include(CTest)
+include(Catch)
+catch_discover_tests(test_perft)
+catch_discover_tests(test_is_check)
+catch_discover_tests(test_is_pseudo_legal)
