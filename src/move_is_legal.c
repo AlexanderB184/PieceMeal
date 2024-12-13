@@ -87,17 +87,39 @@ int is_legal_king_move(const chess_state_t* chess_state, move_t move) {
   sq0x88_t to = get_to(move);
   if (is_under_attack(chess_state, to, chess_state->enemy_colour)) return 0;
   if (is_queen_castle(move)) {
-    return !is_under_attack(chess_state, from - 1, chess_state->enemy_colour);
+    return !is_check(chess_state) &&
+           !is_under_attack(chess_state, from - 1, chess_state->enemy_colour);
   }
   if (is_king_castle(move)) {
-    return !is_under_attack(chess_state, from + 1, chess_state->enemy_colour);
+    return !is_check(chess_state) &&
+           !is_under_attack(chess_state, from + 1, chess_state->enemy_colour);
   }
   return 1;
+}
+
+int is_interposing(const chess_state_t* chess_state, move_t move) {
+  sq0x88_t from = get_from(move);
+  sq0x88_t to = get_to(move);
+  sq0x88_t king_square = chess_state->friendly_pieces->king_square;
+  sq0x88_t checker = checking_square(chess_state);
+  if ((piece(chess_state, checker) & QUEEN) == 0) {
+        // checker is not interposable
+        return 0;
+      }
+      sq0x88_t interpose_inc = queen_increment(king_square, to);
+      // interposing between checker and king
+      if (interpose_inc == 0) {
+        return 0;
+      }
+      if (interpose_inc != queen_increment(to, checker)) {
+        return 0;
+      }
 }
 
 // checks if pseudo legal move is legal, assumes position is not in check
 int is_legal(const chess_state_t* chess_state, move_t move) {
   sq0x88_t from = get_from(move);
+  sq0x88_t to = get_to(move);
 
   // if (piece(chess_state, to) & KING) {
   //   trace_ply_stack(chess_state);
@@ -109,6 +131,25 @@ int is_legal(const chess_state_t* chess_state, move_t move) {
 
   if (from == king_square) {  // king moves
     return is_legal_king_move(chess_state, move);
+  }
+  if (is_double_check(chess_state)) {
+    return 0;
+  }
+
+  if (is_check(chess_state)) {
+    sq0x88_t checker = checking_square(chess_state);
+    if (is_enpassent(move)) {
+      if (to != checker + chess_state->up_increment &&
+          !is_interposing(chess_state, move)) {
+        return 0;
+      }
+    } else if (is_capture(move)) {
+      if (to != checker) {
+        return 0;
+      }
+    } else if (!is_interposing(chess_state, move)) {
+      return 0;
+    }
   }
   if (is_enpassent(move)) {
     if (is_pinned_enpassent(chess_state, move)) return 0;
@@ -154,17 +195,21 @@ int is_pseudo_legal_pawn_move(const chess_state_t* chess_state, move_t move) {
   sq0x88_t to = get_to(move);
   sq0x88_t inc = chess_state->up_increment;
   if (is_double_pawn_push(move)) {
-    return (sq0x88_to_rank07(from) == 1 || sq0x88_to_rank07(from) == 6) && (sq0x88_t)(from + 2 * inc) == to && piece_is_empty(chess_state, to - inc) &&
+    return (sq0x88_to_rank07(from) == 1 || sq0x88_to_rank07(from) == 6) &&
+           (sq0x88_t)(from + 2 * inc) == to &&
+           piece_is_empty(chess_state, to - inc) &&
            piece_is_empty(chess_state, to);
   }
   if (is_enpassent(move) && enpassent_target(chess_state) != to) {
     return 0;
   }
-  if ((sq0x88_to_rank07(to) == 0 || sq0x88_to_rank07(to) == 7) && !is_promotion(move)) {
+  if ((sq0x88_to_rank07(to) == 0 || sq0x88_to_rank07(to) == 7) &&
+      !is_promotion(move)) {
     return 0;
   }
   if (is_capture(move)) {
-    return (to == (sq0x88_t)(from + inc + 1) || to == (sq0x88_t)(from + inc - 1));
+    return (to == (sq0x88_t)(from + inc + 1) ||
+            to == (sq0x88_t)(from + inc - 1));
   }
   return (to == (sq0x88_t)(from + inc) && piece_is_empty(chess_state, to));
 }
@@ -194,20 +239,21 @@ int is_pseudo_legal(const chess_state_t* chess_state, move_t move) {
 
   // validate move flags
   if (is_promotion(move) && ((piece(chess_state, from) & PIECE_MASK) != PAWN ||
-      !is_promoting(chess_state, from))) {
+                             !is_promoting(chess_state, from))) {
     return 0;
   }
   if (is_enpassent(move) && ((piece(chess_state, from) & PIECE_MASK) != PAWN ||
-      enpassent_target(chess_state) != to)) {
+                             enpassent_target(chess_state) != to)) {
     return 0;
   }
   if (is_queen_castle(move) &&
       ((piece(chess_state, from) & PIECE_MASK) != KING ||
-      !can_castle_queen_side(chess_state) || to != from - 2)) {
+       !can_castle_queen_side(chess_state) || to != from - 2)) {
     return 0;
   }
-  if (is_king_castle(move) && ((piece(chess_state, from) & PIECE_MASK) != KING ||
-      !can_castle_king_side(chess_state) || to != from + 2)) {
+  if (is_king_castle(move) &&
+      ((piece(chess_state, from) & PIECE_MASK) != KING ||
+       !can_castle_king_side(chess_state) || to != from + 2)) {
     return 0;
   }
   // is a capture
@@ -218,14 +264,15 @@ int is_pseudo_legal(const chess_state_t* chess_state, move_t move) {
   if (!is_capture(move) && piece_is_enemy(chess_state, to)) {
     return 0;
   }
-  if (is_double_pawn_push(move) && (piece(chess_state, from) & PIECE_MASK) != PAWN) {
+  if (is_double_pawn_push(move) &&
+      (piece(chess_state, from) & PIECE_MASK) != PAWN) {
     return 0;
   }
 
   // piece movement is valid
   switch (piece(chess_state, from) & PIECE_MASK) {
     case PAWN:
-      
+
       if (!is_pseudo_legal_pawn_move(chess_state, move)) {
         return 0;
       }
@@ -278,7 +325,8 @@ int is_pseudo_legal(const chess_state_t* chess_state, move_t move) {
 
   sq0x88_t check_square = checking_square(chess_state);
   // capturing checking piece
-  if (is_enpassent(move) && check_square == enpassent_target(chess_state) - chess_state->up_increment) {
+  if (is_enpassent(move) && check_square == enpassent_target(chess_state) -
+                                                chess_state->up_increment) {
     return 1;
   }
   if (is_capture(move)) {
@@ -297,6 +345,6 @@ int is_pseudo_legal(const chess_state_t* chess_state, move_t move) {
   if (interpose_inc != queen_increment(to, check_square)) {
     return 0;
   }
-  
+
   return 1;
 }
