@@ -423,14 +423,11 @@ size_t generate_promotions_internal(const chess_state_t* chess_state,
 size_t generate_moves_internal(const chess_state_t* chess_state,
                                const piece_list_t* piece_lists, move_t* moves) {
   size_t move_count = 0;
-  /*
+  
   move_count = castling_moves(chess_state, moves, move_count,
                               piece_lists->king_square);
   GENERATE_FOR_ALL_PIECES(moves);
-  */
- move_count = generate_captures_internal(chess_state, piece_lists, moves);
- move_count += generate_quiets_internal(chess_state, piece_lists, moves + move_count);
- move_count += generate_promotions_internal(chess_state, piece_lists, moves + move_count);
+  
   return move_count;
 }
 
