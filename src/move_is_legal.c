@@ -87,17 +87,19 @@ int is_legal_king_move(const chess_state_t* chess_state, move_t move) {
   sq0x88_t to = get_to(move);
   if (is_under_attack(chess_state, to, chess_state->enemy_colour)) return 0;
   if (is_queen_castle(move)) {
-    return !is_under_attack(chess_state, from - 1, chess_state->enemy_colour);
+    return !is_check(chess_state) && !is_under_attack(chess_state, from - 1, chess_state->enemy_colour);
   }
   if (is_king_castle(move)) {
-    return !is_under_attack(chess_state, from + 1, chess_state->enemy_colour);
+    return !is_check(chess_state) && !is_under_attack(chess_state, from + 1, chess_state->enemy_colour);
   }
   return 1;
 }
 
+
 // checks if pseudo legal move is legal, assumes position is not in check
 int is_legal(const chess_state_t* chess_state, move_t move) {
   sq0x88_t from = get_from(move);
+  sq0x88_t to = get_to(move);
 
   // if (piece(chess_state, to) & KING) {
   //   trace_ply_stack(chess_state);
@@ -110,37 +112,42 @@ int is_legal(const chess_state_t* chess_state, move_t move) {
   if (from == king_square) {  // king moves
     return is_legal_king_move(chess_state, move);
   }
+
+  if (is_double_check(chess_state)) {
+    return 0;
+  }
+  if (is_check(chess_state)) {
+    if (!is_enpassent(move)) {
+      if (is_capture(move) && to != checking_square(chess_state)) {
+        return 0;
+      }
+      if (!is_capture(move)){
+        sq0x88_t inc = queen_increment(king_square, to);
+        if( inc == 0 || inc != queen_increment(to, checking_square(chess_state))) {
+          return 0;
+        }
+      }
+    } else {
+     sq0x88_t inc = queen_increment(king_square, to);
+     if (rankfile_to_sq0x88(sq0x88_to_rank07(from), sq0x88_to_file07(to)) != checking_square(chess_state) && (inc == 0 || inc != queen_increment(to, checking_square(chess_state)))) {
+      return 0;
+     } 
+    }
+  }
   if (is_enpassent(move)) {
     if (is_pinned_enpassent(chess_state, move)) return 0;
   }
 
   return !is_pinned(chess_state, move);
-  /*
-  // checking moved piece is not pinned
-  inc = queen_increment(king_square, from);
-  if (inc == 0) return 1;
-  if (inc == queen_increment(king_square, to)) return 1;
-  if (forwards_ray_cast(chess_state, king_square, inc) != from) return 1;
-  sq0x88_t pinning_square = forwards_ray_cast(chess_state, from, inc);
-  if (off_the_board(pinning_square) ||
-      piece_is_friendly(chess_state, pinning_square))
-    return 1;
-  // only sliding pieces can pin
-  if (((piece(chess_state, pinning_square) & BISHOP) &&
-       bishop_increment(king_square, pinning_square)) ||
-      ((piece(chess_state, pinning_square) & ROOK) &&
-       rook_increment(king_square, pinning_square))) {
-    return 0;
-  }
-  return 1;*/
 }
+
 
 int is_pseudo_legal_king_move(const chess_state_t* chess_state, move_t move) {
   if (is_king_castle(move)) {
-    return can_castle_king_side(chess_state) && !is_check(chess_state);
+    return can_castle_king_side(chess_state);
   }
   if (is_queen_castle(move)) {
-    return can_castle_queen_side(chess_state) && !is_check(chess_state);
+    return can_castle_queen_side(chess_state);
   }
   return king_increment(get_from(move), get_to(move)) != 0;
 }
@@ -260,42 +267,6 @@ int is_pseudo_legal(const chess_state_t* chess_state, move_t move) {
       break;
     default:
       return 0;
-  }
-
-  // check rules for psuedo legal (ignoring pin checks & moving king to
-  // threatened square)
-  if (!is_check(chess_state)) {
-    return 1;
-  }
-
-  if ((piece(chess_state, from) & PIECE_MASK) == KING) {
-    return 1;
-  }
-
-  if (is_double_check(chess_state)) {
-    return 0;
-  }
-
-  sq0x88_t check_square = checking_square(chess_state);
-  // capturing checking piece
-  if (is_enpassent(move) && check_square == enpassent_target(chess_state) - chess_state->up_increment) {
-    return 1;
-  }
-  if (is_capture(move)) {
-    return to == check_square;
-  }
-  // checker is not interposable
-  if ((piece(chess_state, check_square) & QUEEN) == 0) {
-    return 0;
-  }
-  sq0x88_t king_square = chess_state->friendly_pieces->king_square;
-  sq0x88_t interpose_inc = queen_increment(king_square, to);
-  // interposing between checker and king
-  if (interpose_inc == 0) {
-    return 0;
-  }
-  if (interpose_inc != queen_increment(to, check_square)) {
-    return 0;
   }
   
   return 1;
