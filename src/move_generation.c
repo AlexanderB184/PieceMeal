@@ -4,6 +4,10 @@
 #include "../include/chess-lib.h"
 #include "../include/private/chess-lib-internals.h"
 
+// todo
+// make piece list base move generation functions i.e. size_t generate_moves_internal(const chess_state_t* chess_state, const piece_list_t* piece_lists, move_t* moves);
+// make incremental move generation functions i. size_t generate_captures(const chess_state_t* chess_state, move_t * moves);
+
 #pragma region Helper Functions
 
 int is_promoting(const chess_state_t* chess_state, sq0x88_t from) {
@@ -598,16 +602,17 @@ size_t generate_check_evasions(const chess_state_t* chess_state,
   return move_count;
 }
 
-size_t generate_legal_moves(const chess_state_t* chess_state, move_t* moves) {
-  size_t move_count = generate_moves(chess_state, moves);
-
+size_t remove_illegal_moves(const chess_state_t* chess_state, move_t* moves, size_t move_count) {
   for (size_t i = 0; i < move_count; i++) {
     if (!is_legal(chess_state, moves[i])) {
       moves[i--] = moves[--move_count];
     }
   }
-
   return move_count;
+}
+
+size_t generate_legal_moves(const chess_state_t* chess_state, move_t* moves) {
+  return remove_illegal_moves(chess_state, moves, generate_moves(chess_state, moves));
 }
 
 size_t generate_moves(const chess_state_t* chess_state, move_t* moves) {
