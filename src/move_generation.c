@@ -4,6 +4,8 @@
 #include "../include/chess-lib.h"
 #include "../include/private/chess-lib-internals.h"
 
+#pragma region Helper Functions
+
 int is_promoting(const chess_state_t* chess_state, sq0x88_t from) {
   return (sq0x88_to_rank07(from) == 1 &&
           chess_state->friendly_colour == BLACK) ||
@@ -46,6 +48,12 @@ int can_castle_queen_side(const chess_state_t* chess_state) {
          piece(chess_state, king_square - 3) == EMPTY;
 }
 
+#pragma endregion
+
+#pragma region Piece Specific Move Generators
+
+#pragma region Knight Moves
+
 // knight movement
 
 size_t knight_moves(const chess_state_t* chess_state, move_t* moves,
@@ -63,7 +71,7 @@ size_t knight_moves(const chess_state_t* chess_state, move_t* moves,
 }
 
 size_t knight_quiets(const chess_state_t* chess_state, move_t* moves,
-                    size_t move_count, sq0x88_t from) {
+                     size_t move_count, sq0x88_t from) {
   for (int i = 0; i < KNIGHT_INCREMENTS_COUNT; i++) {
     sq0x88_t to = from + knight_increments_list[i];
     if (off_the_board(to) || piece_is_friendly(chess_state, to)) {
@@ -77,7 +85,7 @@ size_t knight_quiets(const chess_state_t* chess_state, move_t* moves,
 }
 
 size_t knight_captures(const chess_state_t* chess_state, move_t* moves,
-                    size_t move_count, sq0x88_t from) {
+                       size_t move_count, sq0x88_t from) {
   for (int i = 0; i < KNIGHT_INCREMENTS_COUNT; i++) {
     sq0x88_t to = from + knight_increments_list[i];
     if (off_the_board(to) || piece_is_friendly(chess_state, to)) {
@@ -89,6 +97,10 @@ size_t knight_captures(const chess_state_t* chess_state, move_t* moves,
   }
   return move_count;
 }
+
+#pragma endregion
+
+#pragma region King Moves
 
 size_t king_moves(const chess_state_t* chess_state, move_t* moves,
                   size_t move_count, sq0x88_t king_square) {
@@ -106,7 +118,7 @@ size_t king_moves(const chess_state_t* chess_state, move_t* moves,
 }
 
 size_t king_quiets(const chess_state_t* chess_state, move_t* moves,
-                  size_t move_count, sq0x88_t from) {
+                   size_t move_count, sq0x88_t from) {
   for (int i = 0; i < KING_INCREMENTS_COUNT; i++) {
     sq0x88_t to = from + king_increments_list[i];
     if (off_the_board(to) || piece_is_friendly(chess_state, to)) {
@@ -121,7 +133,7 @@ size_t king_quiets(const chess_state_t* chess_state, move_t* moves,
 }
 
 size_t king_captures(const chess_state_t* chess_state, move_t* moves,
-                  size_t move_count, sq0x88_t from) {
+                     size_t move_count, sq0x88_t from) {
   for (int i = 0; i < KING_INCREMENTS_COUNT; i++) {
     sq0x88_t to = from + king_increments_list[i];
     if (off_the_board(to) || piece_is_friendly(chess_state, to)) {
@@ -158,6 +170,19 @@ size_t castling_moves(const chess_state_t* chess_state, move_t* moves,
   return move_count;
 }
 
+#pragma endregion
+
+#pragma region Pawn Moves
+
+// flags should either be QUIET_MOVE or CAPTURE, add_promotion_moves will handle the promotion flags
+size_t add_promotion_moves(move_t* moves, size_t move_count, sq0x88_t from, sq0x88_t to, int flags) {
+  moves[move_count++] = move(from, to, flags | QUEEN_PROMOTION);
+  moves[move_count++] = move(from, to, flags | ROOK_PROMOTION);
+  moves[move_count++] = move(from, to, flags | BISHOP_PROMOTION);
+  moves[move_count++] = move(from, to, flags | KNIGHT_PROMOTION);
+  return move_count;
+}
+
 size_t pawn_moves(const chess_state_t* chess_state, move_t* moves,
                   size_t move_count, sq0x88_t from) {
   // if is promoting
@@ -165,24 +190,15 @@ size_t pawn_moves(const chess_state_t* chess_state, move_t* moves,
   sq0x88_t to = from + inc;
   if (is_promoting(chess_state, from)) {
     if (piece(chess_state, to) == EMPTY) {
-      moves[move_count++] = move(from, to, QUEEN_PROMOTION);
-      moves[move_count++] = move(from, to, ROOK_PROMOTION);
-      moves[move_count++] = move(from, to, BISHOP_PROMOTION);
-      moves[move_count++] = move(from, to, KNIGHT_PROMOTION);
+      move_count = add_promotion_moves(moves, move_count, from, to, QUIET_MOVE);
     }
     to = from + inc + 1;
     if (!off_the_board(to) && piece_is_enemy(chess_state, to)) {
-      moves[move_count++] = move(from, to, QUEEN_CAPTURE_PROMOTION);
-      moves[move_count++] = move(from, to, ROOK_CAPTURE_PROMOTION);
-      moves[move_count++] = move(from, to, BISHOP_CAPTURE_PROMOTION);
-      moves[move_count++] = move(from, to, KNIGHT_CAPTURE_PROMOTION);
+      move_count = add_promotion_moves(moves, move_count, from, to, CAPTURE);
     }
     to = from + inc - 1;
     if (!off_the_board(to) && piece_is_enemy(chess_state, to)) {
-      moves[move_count++] = move(from, to, QUEEN_CAPTURE_PROMOTION);
-      moves[move_count++] = move(from, to, ROOK_CAPTURE_PROMOTION);
-      moves[move_count++] = move(from, to, BISHOP_CAPTURE_PROMOTION);
-      moves[move_count++] = move(from, to, KNIGHT_CAPTURE_PROMOTION);
+      move_count = add_promotion_moves(moves, move_count, from, to, CAPTURE);
     }
     return move_count;
   }
@@ -214,7 +230,7 @@ size_t pawn_moves(const chess_state_t* chess_state, move_t* moves,
 }
 
 size_t pawn_quiets(const chess_state_t* chess_state, move_t* moves,
-                  size_t move_count, sq0x88_t from) {
+                   size_t move_count, sq0x88_t from) {
   // if is promoting
   sq0x88_t inc = chess_state->up_increment;
   sq0x88_t to = from + inc;
@@ -234,10 +250,8 @@ size_t pawn_quiets(const chess_state_t* chess_state, move_t* moves,
   return move_count;
 }
 
-
-
 size_t pawn_captures(const chess_state_t* chess_state, move_t* moves,
-                  size_t move_count, sq0x88_t from) {
+                     size_t move_count, sq0x88_t from) {
   // if is promoting
   sq0x88_t inc = chess_state->up_increment;
   sq0x88_t to = from + inc;
@@ -260,7 +274,7 @@ size_t pawn_captures(const chess_state_t* chess_state, move_t* moves,
 }
 
 size_t pawn_promotions(const chess_state_t* chess_state, move_t* moves,
-                  size_t move_count, sq0x88_t from) {
+                       size_t move_count, sq0x88_t from) {
   // if is promoting
   sq0x88_t inc = chess_state->up_increment;
   sq0x88_t to = from + inc;
@@ -268,27 +282,23 @@ size_t pawn_promotions(const chess_state_t* chess_state, move_t* moves,
     return move_count;
   }
   if (piece(chess_state, to) == EMPTY) {
-    moves[move_count++] = move(from, to, QUEEN_PROMOTION);
-    moves[move_count++] = move(from, to, ROOK_PROMOTION);
-    moves[move_count++] = move(from, to, BISHOP_PROMOTION);
-    moves[move_count++] = move(from, to, KNIGHT_PROMOTION);
+    move_count = add_promotion_moves(moves, move_count, from, to, QUIET_MOVE);
   }
   to = from + inc + 1;
   if (!off_the_board(to) && piece_is_enemy(chess_state, to)) {
-    moves[move_count++] = move(from, to, QUEEN_CAPTURE_PROMOTION);
-    moves[move_count++] = move(from, to, ROOK_CAPTURE_PROMOTION);
-    moves[move_count++] = move(from, to, BISHOP_CAPTURE_PROMOTION);
-    moves[move_count++] = move(from, to, KNIGHT_CAPTURE_PROMOTION);
+    move_count = add_promotion_moves(moves, move_count, from, to, CAPTURE);
   }
   to = from + inc - 1;
   if (!off_the_board(to) && piece_is_enemy(chess_state, to)) {
-    moves[move_count++] = move(from, to, QUEEN_CAPTURE_PROMOTION);
-    moves[move_count++] = move(from, to, ROOK_CAPTURE_PROMOTION);
-    moves[move_count++] = move(from, to, BISHOP_CAPTURE_PROMOTION);
-    moves[move_count++] = move(from, to, KNIGHT_CAPTURE_PROMOTION);
+    move_count = add_promotion_moves(moves, move_count, from, to, CAPTURE);
+
   }
   return move_count;
 }
+
+#pragma endregion
+
+#pragma region Sliding Moves
 
 size_t sliding_moves(const chess_state_t* chess_state, move_t* moves,
                      size_t move_count, sq0x88_t from,
@@ -307,8 +317,8 @@ size_t sliding_moves(const chess_state_t* chess_state, move_t* moves,
 }
 
 size_t sliding_quiets(const chess_state_t* chess_state, move_t* moves,
-                     size_t move_count, sq0x88_t from,
-                     const sq0x88_t* increments, int increments_count) {
+                      size_t move_count, sq0x88_t from,
+                      const sq0x88_t* increments, int increments_count) {
   for (sq0x88_t i = 0; i < increments_count; i++) {
     sq0x88_t inc = increments[i];
     sq0x88_t to;
@@ -320,8 +330,8 @@ size_t sliding_quiets(const chess_state_t* chess_state, move_t* moves,
 }
 
 size_t sliding_captures(const chess_state_t* chess_state, move_t* moves,
-                     size_t move_count, sq0x88_t from,
-                     const sq0x88_t* increments, int increments_count) {
+                        size_t move_count, sq0x88_t from,
+                        const sq0x88_t* increments, int increments_count) {
   for (sq0x88_t i = 0; i < increments_count; i++) {
     sq0x88_t inc = increments[i];
     sq0x88_t to = forwards_ray_cast(chess_state, from, inc);
@@ -330,6 +340,10 @@ size_t sliding_captures(const chess_state_t* chess_state, move_t* moves,
   }
   return move_count;
 }
+
+#pragma endregion
+
+#pragma endregion
 
 size_t generate_psuedo_legal_moves(const chess_state_t* chess_state,
                                    move_t* moves) {
@@ -343,128 +357,87 @@ size_t generate_psuedo_legal_moves(const chess_state_t* chess_state,
                               chess_state->friendly_pieces->king_square);
 
   // queen moves
-  for (int queen_index = 0;
-       queen_index < chess_state->friendly_pieces->queen_count; queen_index++) {
-    move_count =
-        sliding_moves(chess_state, moves, move_count,
-                      chess_state->friendly_pieces->queen_list[queen_index],
-                      queen_increments_list, QUEEN_INCREMENTS_COUNT);
+  FOR_EACH_PIECE(chess_state->friendly_pieces, queen, square) {
+    move_count = sliding_moves(chess_state, moves, move_count, square,
+                               queen_increments_list, QUEEN_INCREMENTS_COUNT);
   }
+
   // rook moves
-  for (int rook_index = 0;
-       rook_index < chess_state->friendly_pieces->rook_count; rook_index++) {
-    move_count =
-        sliding_moves(chess_state, moves, move_count,
-                      chess_state->friendly_pieces->rook_list[rook_index],
-                      rook_increments_list, ROOK_INCREMENTS_COUNT);
+  FOR_EACH_PIECE(chess_state->friendly_pieces, rook, square) {
+    move_count = sliding_moves(chess_state, moves, move_count, square,
+                               rook_increments_list, ROOK_INCREMENTS_COUNT);
   }
 
   // light bishop moves
-  for (int light_bishop_index = 0;
-       light_bishop_index < chess_state->friendly_pieces->light_bishop_count;
-       light_bishop_index++) {
-    move_count = sliding_moves(
-        chess_state, moves, move_count,
-        chess_state->friendly_pieces->light_bishop_list[light_bishop_index],
-        bishop_increments_list, BISHOP_INCREMENTS_COUNT);
+  FOR_EACH_PIECE(chess_state->friendly_pieces, light_bishop, square) {
+    move_count = sliding_moves(chess_state, moves, move_count, square,
+                               bishop_increments_list, BISHOP_INCREMENTS_COUNT);
   }
 
   // dark bishop moves
-  for (int dark_bishop_index = 0;
-       dark_bishop_index < chess_state->friendly_pieces->dark_bishop_count;
-       dark_bishop_index++) {
-    move_count = sliding_moves(
-        chess_state, moves, move_count,
-        chess_state->friendly_pieces->dark_bishop_list[dark_bishop_index],
-        bishop_increments_list, BISHOP_INCREMENTS_COUNT);
+  FOR_EACH_PIECE(chess_state->friendly_pieces, dark_bishop, square) {
+    move_count = sliding_moves(chess_state, moves, move_count, square,
+                               bishop_increments_list, BISHOP_INCREMENTS_COUNT);
   }
 
   // knight moves
-  for (int knight_index = 0;
-       knight_index < chess_state->friendly_pieces->knight_count;
-       knight_index++) {
-    sq0x88_t from = chess_state->friendly_pieces->knight_list[knight_index];
-    move_count = knight_moves(chess_state, moves, move_count, from);
+  FOR_EACH_PIECE(chess_state->friendly_pieces, knight, square) {
+    move_count = knight_moves(chess_state, moves, move_count, square);
   }
 
   // pawn moves
-  for (int pawn_index = 0;
-       pawn_index < chess_state->friendly_pieces->pawn_count; pawn_index++) {
-    sq0x88_t from = chess_state->friendly_pieces->pawn_list[pawn_index];
-    move_count = pawn_moves(chess_state, moves, move_count, from);
+  FOR_EACH_PIECE(chess_state->friendly_pieces, pawn, square) {
+    move_count = pawn_moves(chess_state, moves, move_count, square);
   }
 
   return move_count;
 }
 
-size_t generate_sliding_piece_capture(const chess_state_t* chess_state,
-                                      move_t* moves, size_t move_count,
-                                      sq0x88_t square, sq0x88_t target,
-                                      sq0x88_t inc) {
-  if (inc && forwards_ray_cast(chess_state, square, inc) == target) {
-    moves[move_count++] = move(square, target, CAPTURE);
-  }
-  return move_count;
+int sliding_can_reach(const chess_state_t* chess_state, sq0x88_t from,
+                      sq0x88_t target, sq0x88_t inc) {
+  return inc && backwards_ray_cast(chess_state, target, inc) == from;
 }
 
-size_t generate_sliding_piece_interposing_move(const chess_state_t* chess_state,
-                                               move_t* moves, size_t move_count,
-                                               sq0x88_t square, sq0x88_t target,
-                                               sq0x88_t inc) {
-  if (inc && backwards_ray_cast(chess_state, target, inc) == square) {
-    moves[move_count++] = move(square, target, QUIET_MOVE);
-  }
-  return move_count;
-}
-
-size_t generate_psuedo_legal_captures_of(const chess_state_t* chess_state,
-                                         move_t* moves, size_t move_count,
-                                         sq0x88_t target) {
+size_t generate_captures_of(const chess_state_t* chess_state, move_t* moves,
+                            size_t move_count, sq0x88_t target) {
   // queen moves
-  for (int p = 0; p < chess_state->friendly_pieces->queen_count; p++) {
-    move_count = generate_sliding_piece_capture(
-        chess_state, moves, move_count,
-        chess_state->friendly_pieces->queen_list[p], target,
-        queen_increment(chess_state->friendly_pieces->queen_list[p], target));
+  FOR_EACH_PIECE(chess_state->friendly_pieces, queen, square) {
+    if (sliding_can_reach(chess_state, square, target,
+                          queen_increment(square, target))) {
+      moves[move_count++] = move(square, target, CAPTURE);
+    }
   }
 
   // rook moves
-  for (int p = 0; p < chess_state->friendly_pieces->rook_count; p++) {
-    move_count = generate_sliding_piece_capture(
-        chess_state, moves, move_count,
-        chess_state->friendly_pieces->rook_list[p], target,
-        rook_increment(chess_state->friendly_pieces->rook_list[p], target));
+  FOR_EACH_PIECE(chess_state->friendly_pieces, rook, square) {
+    if (sliding_can_reach(chess_state, square, target,
+                          rook_increment(square, target))) {
+      moves[move_count++] = move(square, target, CAPTURE);
+    }
   }
 
   if (is_light_square(target)) {
     // light bishop moves
-    for (int p = 0; p < chess_state->friendly_pieces->light_bishop_count; p++) {
-      move_count = generate_sliding_piece_capture(
-          chess_state, moves, move_count,
-          chess_state->friendly_pieces->light_bishop_list[p], target,
-          bishop_increment(chess_state->friendly_pieces->light_bishop_list[p],
-                           target));
+    FOR_EACH_PIECE(chess_state->friendly_pieces, light_bishop, square) {
+      if (sliding_can_reach(chess_state, square, target,
+                            bishop_increment(square, target))) {
+        moves[move_count++] = move(square, target, CAPTURE);
+      }
     }
   } else {
     // dark bishop moves
-    for (int p = 0; p < chess_state->friendly_pieces->dark_bishop_count; p++) {
-      move_count = generate_sliding_piece_capture(
-          chess_state, moves, move_count,
-          chess_state->friendly_pieces->dark_bishop_list[p], target,
-          bishop_increment(chess_state->friendly_pieces->dark_bishop_list[p],
-                           target));
+    FOR_EACH_PIECE(chess_state->friendly_pieces, dark_bishop, square) {
+      if (sliding_can_reach(chess_state, square, target,
+                            bishop_increment(square, target))) {
+        moves[move_count++] = move(square, target, CAPTURE);
+      }
     }
   }
 
   // knight moves
-  for (int knight_index = 0;
-       knight_index < chess_state->friendly_pieces->knight_count;
-       knight_index++) {
-    if (knight_increment(
-            chess_state->friendly_pieces->knight_list[knight_index], target)) {
-      moves[move_count++] =
-          move(chess_state->friendly_pieces->knight_list[knight_index], target,
-               CAPTURE);
+  FOR_EACH_PIECE(chess_state->friendly_pieces, knight, square) {
+    if (knight_increment(square, target)) {
+      moves[move_count++] = move(square, target, CAPTURE);
     }
   }
 
@@ -475,17 +448,11 @@ size_t generate_psuedo_legal_captures_of(const chess_state_t* chess_state,
   if (is_promoting(chess_state, target - inc)) {
     from = target - inc + 1;
     if (!off_the_board(from) && piece(chess_state, from) == friendly_pawn) {
-      moves[move_count++] = move(from, target, QUEEN_CAPTURE_PROMOTION);
-      moves[move_count++] = move(from, target, ROOK_CAPTURE_PROMOTION);
-      moves[move_count++] = move(from, target, BISHOP_CAPTURE_PROMOTION);
-      moves[move_count++] = move(from, target, KNIGHT_CAPTURE_PROMOTION);
+      move_count = add_promotion_moves(moves, move_count, from ,target, CAPTURE);
     }
     from = target - inc - 1;
     if (!off_the_board(from) && piece(chess_state, from) == friendly_pawn) {
-      moves[move_count++] = move(from, target, QUEEN_CAPTURE_PROMOTION);
-      moves[move_count++] = move(from, target, ROOK_CAPTURE_PROMOTION);
-      moves[move_count++] = move(from, target, BISHOP_CAPTURE_PROMOTION);
-      moves[move_count++] = move(from, target, KNIGHT_CAPTURE_PROMOTION);
+      move_count = add_promotion_moves(moves, move_count, from ,target, CAPTURE);
     }
     return move_count;
   }
@@ -518,58 +485,47 @@ size_t generate_psuedo_legal_captures_of(const chess_state_t* chess_state,
   return move_count;
 }
 
-size_t generate_psuedo_legal_interposing_moves(const chess_state_t* chess_state,
-                                               move_t* moves, size_t move_count,
-                                               sq0x88_t interposing_square) {
+size_t generate_interposing_moves(const chess_state_t* chess_state,
+                                  move_t* moves, size_t move_count,
+                                  sq0x88_t target) {
   // queen moves
-  for (int p = 0; p < chess_state->friendly_pieces->queen_count; p++) {
-    move_count = generate_sliding_piece_interposing_move(
-        chess_state, moves, move_count,
-        chess_state->friendly_pieces->queen_list[p], interposing_square,
-        queen_increment(chess_state->friendly_pieces->queen_list[p],
-                        interposing_square));
+  FOR_EACH_PIECE(chess_state->friendly_pieces, queen, square) {
+    if (sliding_can_reach(chess_state, square, target,
+                          queen_increment(square, target))) {
+      moves[move_count++] = move(square, target, QUIET_MOVE);
+    }
   }
 
   // rook moves
-  for (int p = 0; p < chess_state->friendly_pieces->rook_count; p++) {
-    move_count = generate_sliding_piece_interposing_move(
-        chess_state, moves, move_count,
-        chess_state->friendly_pieces->rook_list[p], interposing_square,
-        rook_increment(chess_state->friendly_pieces->rook_list[p],
-                       interposing_square));
+  FOR_EACH_PIECE(chess_state->friendly_pieces, rook, square) {
+    if (sliding_can_reach(chess_state, square, target,
+                          rook_increment(square, target))) {
+      moves[move_count++] = move(square, target, QUIET_MOVE);
+    }
   }
 
-  if (is_light_square(interposing_square)) {
+  if (is_light_square(target)) {
     // light bishop moves
-    for (int p = 0; p < chess_state->friendly_pieces->light_bishop_count; p++) {
-      move_count = generate_sliding_piece_interposing_move(
-          chess_state, moves, move_count,
-          chess_state->friendly_pieces->light_bishop_list[p],
-          interposing_square,
-          bishop_increment(chess_state->friendly_pieces->light_bishop_list[p],
-                           interposing_square));
+    FOR_EACH_PIECE(chess_state->friendly_pieces, light_bishop, square) {
+      if (sliding_can_reach(chess_state, square, target,
+                            bishop_increment(square, target))) {
+        moves[move_count++] = move(square, target, QUIET_MOVE);
+      }
     }
   } else {
     // dark bishop moves
-    for (int p = 0; p < chess_state->friendly_pieces->dark_bishop_count; p++) {
-      move_count = generate_sliding_piece_interposing_move(
-          chess_state, moves, move_count,
-          chess_state->friendly_pieces->dark_bishop_list[p], interposing_square,
-          bishop_increment(chess_state->friendly_pieces->dark_bishop_list[p],
-                           interposing_square));
+    FOR_EACH_PIECE(chess_state->friendly_pieces, dark_bishop, square) {
+      if (sliding_can_reach(chess_state, square, target,
+                            bishop_increment(square, target))) {
+        moves[move_count++] = move(square, target, QUIET_MOVE);
+      }
     }
   }
 
   // knight moves
-  for (int knight_index = 0;
-       knight_index < chess_state->friendly_pieces->knight_count;
-       knight_index++) {
-    if (knight_increment(
-            chess_state->friendly_pieces->knight_list[knight_index],
-            interposing_square)) {
-      moves[move_count++] =
-          move(chess_state->friendly_pieces->knight_list[knight_index],
-               interposing_square, QUIET_MOVE);
+  FOR_EACH_PIECE(chess_state->friendly_pieces, knight, square) {
+    if (knight_increment(square, target)) {
+      moves[move_count++] = move(square, target, QUIET_MOVE);
     }
   }
 
@@ -577,23 +533,20 @@ size_t generate_psuedo_legal_interposing_moves(const chess_state_t* chess_state,
   sq0x88_t inc = chess_state->up_increment;
   sq0x88_t from;
   piece_t friendly_pawn = PAWN | chess_state->friendly_colour;
-  from = interposing_square - inc;
+  from = target - inc;
   if (!off_the_board(from) && piece(chess_state, from) == friendly_pawn) {
     if (is_promoting(chess_state, from)) {
-      moves[move_count++] = move(from, interposing_square, QUEEN_PROMOTION);
-      moves[move_count++] = move(from, interposing_square, ROOK_PROMOTION);
-      moves[move_count++] = move(from, interposing_square, BISHOP_PROMOTION);
-      moves[move_count++] = move(from, interposing_square, KNIGHT_PROMOTION);
+      move_count = add_promotion_moves(moves, move_count, from, target, QUIET_MOVE);
     } else {
-      moves[move_count++] = move(from, interposing_square, QUIET_MOVE);
+      moves[move_count++] = move(from, target, QUIET_MOVE);
     }
   }
 
-  from = interposing_square - 2 * inc;
+  from = target - 2 * inc;
   if (!off_the_board(from) && piece(chess_state, from) == friendly_pawn &&
-      piece(chess_state, interposing_square - inc) == EMPTY &&
+      piece(chess_state, target - inc) == EMPTY &&
       pawn_can_double_push(chess_state, from)) {
-    moves[move_count++] = move(from, interposing_square, DOUBLE_PAWN_PUSH);
+    moves[move_count++] = move(from, target, DOUBLE_PAWN_PUSH);
   }
 
   return move_count;
@@ -615,8 +568,8 @@ size_t generate_check_evasions(const chess_state_t* chess_state,
 
   piece_t checking_piece = piece(chess_state, checking_square(chess_state));
 
-  move_count = generate_psuedo_legal_captures_of(chess_state, moves, move_count,
-                                                 checking_square(chess_state));
+  move_count = generate_captures_of(chess_state, moves, move_count,
+                                    checking_square(chess_state));
 
   // if checking piece isn't a sliding piece cant be interposed
   if (!(checking_piece & (BISHOP | ROOK | QUEEN))) {
@@ -628,8 +581,8 @@ size_t generate_check_evasions(const chess_state_t* chess_state,
   for (sq0x88_t interposing_square = king_square + inc;
        interposing_square != checking_square(chess_state);
        interposing_square += inc) {
-    move_count = generate_psuedo_legal_interposing_moves(
-        chess_state, moves, move_count, interposing_square);
+    move_count = generate_interposing_moves(chess_state, moves, move_count,
+                                            interposing_square);
   }
 
   return move_count;

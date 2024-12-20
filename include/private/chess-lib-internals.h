@@ -35,5 +35,9 @@ void place_piece(chess_state_t* chess_state, sq0x88_t target, piece_t piece);
 
 void move_piece(chess_state_t* chess_state, sq0x88_t from, sq0x88_t to);
 
+#define FOR_EACH_PIECE(PIECE_LIST, PIECE_TYPE, IDENTIFIER)                     \
+  for (uint8_t index = 0, IDENTIFIER = (PIECE_LIST)->PIECE_TYPE##_list[index]; \
+       index < (PIECE_LIST)->PIECE_TYPE##_count;                               \
+       index++, IDENTIFIER = (PIECE_LIST)->PIECE_TYPE##_list[index])
 
 #endif
