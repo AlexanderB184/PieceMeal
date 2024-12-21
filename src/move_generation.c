@@ -377,6 +377,8 @@ size_t sliding_captures(const chess_state_t* chess_state, move_t* moves,
 
 #pragma endregion
 
+#pragma region Coloured Move Generators Non Checked
+
 size_t generate_moves_internal(const chess_state_t* chess_state,
                                    move_t* moves, colour_t colour) {
   size_t move_count = 0;
@@ -424,6 +426,10 @@ size_t generate_moves_internal(const chess_state_t* chess_state,
 
   return move_count;
 }
+
+#pragma endregion
+
+#pragma region Coloured Move Generators Checked
 
 int sliding_can_reach(const chess_state_t* chess_state, sq0x88_t from,
                       sq0x88_t target, sq0x88_t inc) {
@@ -641,6 +647,29 @@ size_t generate_moves_check_internal(const chess_state_t* chess_state, move_t* m
   return move_count;
 }
 
+#pragma endregion
+
+#pragma region Pseudo Legal Move Generators
+
+
+size_t generate_moves(const chess_state_t* chess_state, move_t* moves) {
+  size_t move_count;
+
+  if (is_check(chess_state)) {
+    move_count = generate_moves_check_internal(chess_state, moves,
+                                         chess_state->friendly_colour);
+  } else {
+    move_count = generate_moves_internal(chess_state, moves,
+                                             chess_state->friendly_colour);
+  }
+
+  return move_count;
+}
+
+#pragma endregion
+
+#pragma region Fully Legal Move Generators
+
 size_t remove_illegal_moves(const chess_state_t* chess_state, move_t* moves,
                             size_t move_count) {
   for (size_t i = 0; i < move_count; i++) {
@@ -656,16 +685,4 @@ size_t generate_legal_moves(const chess_state_t* chess_state, move_t* moves) {
                               generate_moves(chess_state, moves));
 }
 
-size_t generate_moves(const chess_state_t* chess_state, move_t* moves) {
-  size_t move_count;
-
-  if (is_check(chess_state)) {
-    move_count = generate_moves_check_internal(chess_state, moves,
-                                         chess_state->friendly_colour);
-  } else {
-    move_count = generate_moves_internal(chess_state, moves,
-                                             chess_state->friendly_colour);
-  }
-
-  return move_count;
-}
+#pragma endregion
