@@ -379,49 +379,86 @@ size_t sliding_captures(const chess_state_t* chess_state, move_t* moves,
 
 #pragma region Coloured Move Generators Non Checked
 
-size_t generate_moves_internal(const chess_state_t* chess_state,
-                                   move_t* moves, colour_t colour) {
+#define FOR_ALL_PIECES(MOVE_TYPE)                                            \
+  do {                                                                       \
+    move_count = king_captures(chess_state, moves, move_count,               \
+                               piece_lists->king_square, colour);            \
+                                                                             \
+    FOR_EACH_PIECE(piece_lists, queen, square) {                             \
+      move_count =                                                           \
+          sliding_captures(chess_state, moves, move_count, square, colour,   \
+                           queen_increments_list, QUEEN_INCREMENTS_COUNT);   \
+    }                                                                        \
+                                                                             \
+    FOR_EACH_PIECE(piece_lists, rook, square) {                              \
+      move_count =                                                           \
+          sliding_captures(chess_state, moves, move_count, square, colour,   \
+                           rook_increments_list, ROOK_INCREMENTS_COUNT);     \
+    }                                                                        \
+                                                                             \
+    FOR_EACH_PIECE(piece_lists, light_bishop, square) {                      \
+      move_count =                                                           \
+          sliding_captures(chess_state, moves, move_count, square, colour,   \
+                           bishop_increments_list, BISHOP_INCREMENTS_COUNT); \
+    }                                                                        \
+                                                                             \
+    FOR_EACH_PIECE(piece_lists, dark_bishop, square) {                       \
+      move_count =                                                           \
+          sliding_captures(chess_state, moves, move_count, square, colour,   \
+                           bishop_increments_list, BISHOP_INCREMENTS_COUNT); \
+    }                                                                        \
+                                                                             \
+    FOR_EACH_PIECE(piece_lists, knight, square) {                            \
+      move_count =                                                           \
+          knight_captures(chess_state, moves, move_count, square, colour);   \
+    }                                                                        \
+                                                                             \
+    FOR_EACH_PIECE(piece_lists, pawn, square) {                              \
+      move_count =                                                           \
+          pawn_captures(chess_state, moves, move_count, square, colour);     \
+    }                                                                        \
+  } while (0)
+
+size_t generate_moves_internal(const chess_state_t* chess_state, move_t* moves,
+                               colour_t colour) {
   size_t move_count = 0;
   const piece_list_t* piece_lists = get_piece_list(chess_state, colour);
-  // king moves
-  move_count = king_moves(chess_state, moves, move_count,
-                          piece_lists->king_square, colour);
-
   move_count = castling_moves(chess_state, moves, move_count,
                               piece_lists->king_square, colour);
 
-  // queen moves
-  FOR_EACH_PIECE(piece_lists, queen, square) {
-    move_count = sliding_moves(chess_state, moves, move_count, square, colour,
-                               queen_increments_list, QUEEN_INCREMENTS_COUNT);
-  }
+  FOR_ALL_PIECES(moves);
 
-  // rook moves
-  FOR_EACH_PIECE(piece_lists, rook, square) {
-    move_count = sliding_moves(chess_state, moves, move_count, square, colour,
-                               rook_increments_list, ROOK_INCREMENTS_COUNT);
-  }
+  return move_count;
+}
 
-  // light bishop moves
-  FOR_EACH_PIECE(piece_lists, light_bishop, square) {
-    move_count = sliding_moves(chess_state, moves, move_count, square, colour,
-                               bishop_increments_list, BISHOP_INCREMENTS_COUNT);
-  }
+size_t generate_captures_internal(const chess_state_t* chess_state,
+                                  move_t* moves, colour_t colour) {
+  size_t move_count = 0;
+  const piece_list_t* piece_lists = get_piece_list(chess_state, colour);
 
-  // dark bishop moves
-  FOR_EACH_PIECE(piece_lists, dark_bishop, square) {
-    move_count = sliding_moves(chess_state, moves, move_count, square, colour,
-                               bishop_increments_list, BISHOP_INCREMENTS_COUNT);
-  }
+  FOR_ALL_PIECES(captures);
 
-  // knight moves
-  FOR_EACH_PIECE(piece_lists, knight, square) {
-    move_count = knight_moves(chess_state, moves, move_count, square, colour);
-  }
+  return move_count;
+}
 
-  // pawn moves
+size_t generate_quiets_internal(const chess_state_t* chess_state, move_t* moves,
+                                colour_t colour) {
+  size_t move_count = 0;
+  const piece_list_t* piece_lists = get_piece_list(chess_state, colour);
+
+  FOR_ALL_PIECES(quiets);
+
+  return move_count;
+}
+
+size_t generate_promotions_internal(const chess_state_t* chess_state,
+                                    move_t* moves, colour_t colour) {
+  size_t move_count = 0;
+  const piece_list_t* piece_lists = get_piece_list(chess_state, colour);
+
   FOR_EACH_PIECE(piece_lists, pawn, square) {
-    move_count = pawn_moves(chess_state, moves, move_count, square, colour);
+    move_count =
+        pawn_promotions(chess_state, moves, move_count, square, colour);
   }
 
   return move_count;
@@ -431,6 +468,7 @@ size_t generate_moves_internal(const chess_state_t* chess_state,
 
 #pragma region Coloured Move Generators Checked
 
+#pragma region Helper Functions
 int sliding_can_reach(const chess_state_t* chess_state, sq0x88_t from,
                       sq0x88_t target, sq0x88_t inc) {
   return inc && backwards_ray_cast(chess_state, target, inc) == from;
@@ -614,8 +652,10 @@ size_t generate_interposing_moves(const chess_state_t* chess_state,
   return move_count;
 }
 
-size_t generate_moves_check_internal(const chess_state_t* chess_state, move_t* moves,
-                               colour_t colour) {
+#pragma endregion
+
+size_t generate_moves_check_internal(const chess_state_t* chess_state,
+                                     move_t* moves, colour_t colour) {
   // if more than 1 attacker, only king moves
   // if only 1 attacker, capture of attacker, block of attacker, king moves
   size_t move_count = 0;
@@ -647,20 +687,110 @@ size_t generate_moves_check_internal(const chess_state_t* chess_state, move_t* m
   return move_count;
 }
 
+size_t generate_captures_check_internal(const chess_state_t* chess_state,
+                                        move_t* moves, colour_t colour) {
+  // if more than 1 attacker, only king moves
+  // if only 1 attacker, capture of attacker, block of attacker, king moves
+  size_t move_count = 0;
+  const piece_list_t* piece_lists = get_piece_list(chess_state, colour);
+
+  sq0x88_t king_square = piece_lists->king_square;
+
+  move_count =
+      king_captures(chess_state, moves, move_count, king_square, colour);
+
+  if (is_double_check(chess_state)) {
+    return move_count;
+  }
+
+  piece_t checking_piece = piece(chess_state, checking_square(chess_state));
+
+  move_count = generate_captures_of(chess_state, moves, move_count, colour,
+                                    checking_square(chess_state));
+
+  return move_count;
+}
+
+size_t generate_quiets_check_internal(const chess_state_t* chess_state,
+                                      move_t* moves, colour_t colour) {
+  // if more than 1 attacker, only king moves
+  // if only 1 attacker, capture of attacker, block of attacker, king moves
+  size_t move_count = 0;
+  const piece_list_t* piece_lists = get_piece_list(chess_state, colour);
+
+  sq0x88_t king_square = piece_lists->king_square;
+
+  move_count = king_quiets(chess_state, moves, move_count, king_square, colour);
+
+  if (is_double_check(chess_state)) {
+    return move_count;
+  }
+
+  piece_t checking_piece = piece(chess_state, checking_square(chess_state));
+
+  // if checking piece isn't a sliding piece cant be interposed
+  if (!(checking_piece & (BISHOP | ROOK | QUEEN))) {
+    return move_count;
+  }
+
+  sq0x88_t inc = queen_increment(king_square, checking_square(chess_state));
+  move_count = generate_interposing_moves(chess_state, moves, move_count,
+                                          colour, king_square + inc,
+                                          checking_square(chess_state), inc);
+
+  return move_count;
+}
+
 #pragma endregion
 
 #pragma region Pseudo Legal Move Generators
 
+#define MOVE_GENERATOR(MOVE_TYPE)                          \
+  if (is_check(chess_state)) {                             \
+    move_count = generate_##MOVE_TYPE##_check_internal(    \
+        chess_state, moves, chess_state->friendly_colour); \
+  } else {                                                 \
+    move_count = generate_##MOVE_TYPE##_internal(          \
+        chess_state, moves, chess_state->friendly_colour); \
+  }
 
 size_t generate_moves(const chess_state_t* chess_state, move_t* moves) {
   size_t move_count;
 
   if (is_check(chess_state)) {
     move_count = generate_moves_check_internal(chess_state, moves,
-                                         chess_state->friendly_colour);
+                                               chess_state->friendly_colour);
   } else {
     move_count = generate_moves_internal(chess_state, moves,
-                                             chess_state->friendly_colour);
+                                         chess_state->friendly_colour);
+  }
+
+  return move_count;
+}
+
+size_t generate_captures(const chess_state_t* chess_state, move_t* moves) {
+  size_t move_count;
+
+  if (is_check(chess_state)) {
+    move_count = generate_captures_check_internal(chess_state, moves,
+                                                  chess_state->friendly_colour);
+  } else {
+    move_count = generate_captures_internal(chess_state, moves,
+                                            chess_state->friendly_colour);
+  }
+
+  return move_count;
+}
+
+size_t generate_quiets(const chess_state_t* chess_state, move_t* moves) {
+  size_t move_count;
+
+  if (is_check(chess_state)) {
+    move_count = generate_quiets_check_internal(chess_state, moves,
+                                                chess_state->friendly_colour);
+  } else {
+    move_count = generate_quiets_internal(chess_state, moves,
+                                          chess_state->friendly_colour);
   }
 
   return move_count;
@@ -683,6 +813,17 @@ size_t remove_illegal_moves(const chess_state_t* chess_state, move_t* moves,
 size_t generate_legal_moves(const chess_state_t* chess_state, move_t* moves) {
   return remove_illegal_moves(chess_state, moves,
                               generate_moves(chess_state, moves));
+}
+
+size_t generate_legal_captures(const chess_state_t* chess_state,
+                               move_t* moves) {
+  return remove_illegal_moves(chess_state, moves,
+                              generate_captures(chess_state, moves));
+}
+
+size_t generate_legal_quiets(const chess_state_t* chess_state, move_t* moves) {
+  return remove_illegal_moves(chess_state, moves,
+                              generate_quiets(chess_state, moves));
 }
 
 #pragma endregion
