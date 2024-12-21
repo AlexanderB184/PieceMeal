@@ -4,10 +4,12 @@
 #include "../include/chess-lib.h"
 #include "../include/private/chess-lib-internals.h"
 
-int is_pinned(const chess_state_t* chess_state, move_t move) {
+int is_pinned(const chess_state_t* chess_state, move_t move, colour_t colour) {
   sq0x88_t from = get_from(move);
   sq0x88_t to = get_to(move);
-  sq0x88_t king_square = chess_state->friendly_pieces->king_square;
+  const piece_list_t* piece_list = get_piece_list(chess_state, colour);
+
+  sq0x88_t king_square = piece_list->king_square;
   // checking moved piece is not pinned
   sq0x88_t inc = queen_increment(king_square, from);
   // piece is not aligned with king
@@ -19,7 +21,7 @@ int is_pinned(const chess_state_t* chess_state, move_t move) {
   // find potential pinning piece
   sq0x88_t pinning_square = forwards_ray_cast(chess_state, from, inc);
   if (off_the_board(pinning_square) ||
-      piece_is_friendly(chess_state, pinning_square))
+      piece_is_colour(chess_state, pinning_square, colour))
     return 0;
   // only sliding pieces can pin
   if (((piece(chess_state, pinning_square) & BISHOP) &&
@@ -31,15 +33,17 @@ int is_pinned(const chess_state_t* chess_state, move_t move) {
   return 0;
 }
 
-int is_pinned_enpassent(const chess_state_t* chess_state, move_t move) {
+int is_pinned_enpassent(const chess_state_t* chess_state, move_t move, colour_t colour) {
   sq0x88_t from = get_from(move);
-  sq0x88_t king_square = chess_state->friendly_pieces->king_square;
+  const piece_list_t* piece_list = get_piece_list(chess_state, colour);
+  sq0x88_t king_square = piece_list->king_square;
   sq0x88_t inc;
+  sq0x88_t pawn_inc = pawn_push_increment(colour);
 
   inc = bishop_increment(
-      king_square, enpassent_target(chess_state) - chess_state->up_increment);
+      king_square, enpassent_target(chess_state) - pawn_inc);
   sq0x88_t captured_pawn =
-      enpassent_target(chess_state) - chess_state->up_increment;
+      enpassent_target(chess_state) - pawn_inc;
   // bishop pin
   if (inc) {
     if (forwards_ray_cast(chess_state, king_square, inc) != captured_pawn)
@@ -49,7 +53,7 @@ int is_pinned_enpassent(const chess_state_t* chess_state, move_t move) {
         forwards_ray_cast(chess_state, captured_pawn, inc);
 
     if (off_the_board(pinning_square) ||
-        piece_is_friendly(chess_state, pinning_square))
+        piece_is_colour(chess_state, pinning_square, colour))
       return 0;
 
     if (piece(chess_state, pinning_square) & BISHOP) return 1;
@@ -69,7 +73,7 @@ int is_pinned_enpassent(const chess_state_t* chess_state, move_t move) {
 
   square = forwards_ray_cast(chess_state, square + inc, inc);
 
-  if (off_the_board(square) || piece_is_friendly(chess_state, square)) return 0;
+  if (off_the_board(square) || piece_is_colour(chess_state, square, colour)) return 0;
 
   if (piece(chess_state, square) & ROOK) return 1;
 
@@ -82,21 +86,27 @@ void trace_ply_stack(const chess_state_t* chess_state) {
   fprintf(stderr, "%s\n", buffer);
 }
 
-int is_legal_king_move(const chess_state_t* chess_state, move_t move) {
+int is_legal_king_move(const chess_state_t* chess_state, move_t move, colour_t colour) {
   sq0x88_t from = get_from(move);
   sq0x88_t to = get_to(move);
-  if (is_under_attack(chess_state, to, chess_state->enemy_colour)) return 0;
+  colour_t enemy_colour = opposite_colour(colour);
+
+  if (is_under_attack(chess_state, to, enemy_colour)) return 0;
   if (is_queen_castle(move)) {
-    return !is_under_attack(chess_state, from - 1, chess_state->enemy_colour);
+    return !is_under_attack(chess_state, from - 1, enemy_colour);
   }
   if (is_king_castle(move)) {
-    return !is_under_attack(chess_state, from + 1, chess_state->enemy_colour);
+    return !is_under_attack(chess_state, from + 1, enemy_colour);
   }
   return 1;
 }
 
 // checks if pseudo legal move is legal, assumes position is not in check
 int is_legal(const chess_state_t* chess_state, move_t move) {
+  return is_legal_internal(chess_state, move, chess_state->friendly_colour);
+}
+
+int is_legal_internal(const chess_state_t* chess_state, move_t move, colour_t colour) {
   sq0x88_t from = get_from(move);
 
   // if (piece(chess_state, to) & KING) {
@@ -104,43 +114,25 @@ int is_legal(const chess_state_t* chess_state, move_t move) {
   //   printf("can capture king\n");
   //   abort();
   // }
-
-  sq0x88_t king_square = chess_state->friendly_pieces->king_square;
+  const piece_list_t* piece_list = get_piece_list(chess_state, colour);
+  sq0x88_t king_square = piece_list->king_square;
 
   if (from == king_square) {  // king moves
-    return is_legal_king_move(chess_state, move);
+    return is_legal_king_move(chess_state, move, colour);
   }
   if (is_enpassent(move)) {
-    if (is_pinned_enpassent(chess_state, move)) return 0;
+    if (is_pinned_enpassent(chess_state, move, colour)) return 0;
   }
 
-  return !is_pinned(chess_state, move);
-  /*
-  // checking moved piece is not pinned
-  inc = queen_increment(king_square, from);
-  if (inc == 0) return 1;
-  if (inc == queen_increment(king_square, to)) return 1;
-  if (forwards_ray_cast(chess_state, king_square, inc) != from) return 1;
-  sq0x88_t pinning_square = forwards_ray_cast(chess_state, from, inc);
-  if (off_the_board(pinning_square) ||
-      piece_is_friendly(chess_state, pinning_square))
-    return 1;
-  // only sliding pieces can pin
-  if (((piece(chess_state, pinning_square) & BISHOP) &&
-       bishop_increment(king_square, pinning_square)) ||
-      ((piece(chess_state, pinning_square) & ROOK) &&
-       rook_increment(king_square, pinning_square))) {
-    return 0;
-  }
-  return 1;*/
+  return !is_pinned(chess_state, move, colour);
 }
 
 int is_pseudo_legal_king_move(const chess_state_t* chess_state, move_t move) {
   if (is_king_castle(move)) {
-    return can_castle_king_side(chess_state) && !is_check(chess_state);
+    return can_castle_king_side(chess_state, chess_state->friendly_colour) && !is_check(chess_state);
   }
   if (is_queen_castle(move)) {
-    return can_castle_queen_side(chess_state) && !is_check(chess_state);
+    return can_castle_queen_side(chess_state, chess_state->friendly_colour) && !is_check(chess_state);
   }
   return king_increment(get_from(move), get_to(move)) != 0;
 }
@@ -194,7 +186,7 @@ int is_pseudo_legal(const chess_state_t* chess_state, move_t move) {
 
   // validate move flags
   if (is_promotion(move) && ((piece(chess_state, from) & PIECE_MASK) != PAWN ||
-      !is_promoting(chess_state, from))) {
+      !is_promoting(chess_state, from, chess_state->friendly_colour))) {
     return 0;
   }
   if (is_enpassent(move) && ((piece(chess_state, from) & PIECE_MASK) != PAWN ||
@@ -203,11 +195,11 @@ int is_pseudo_legal(const chess_state_t* chess_state, move_t move) {
   }
   if (is_queen_castle(move) &&
       ((piece(chess_state, from) & PIECE_MASK) != KING ||
-      !can_castle_queen_side(chess_state) || to != from - 2)) {
+      !can_castle_queen_side(chess_state, chess_state->friendly_colour) || to != from - 2)) {
     return 0;
   }
   if (is_king_castle(move) && ((piece(chess_state, from) & PIECE_MASK) != KING ||
-      !can_castle_king_side(chess_state) || to != from + 2)) {
+      !can_castle_king_side(chess_state, chess_state->friendly_colour) || to != from + 2)) {
     return 0;
   }
   // is a capture
