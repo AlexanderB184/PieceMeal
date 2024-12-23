@@ -6,7 +6,7 @@ project(PieceMeal VERSION 1.0.0)
 add_library(chess SHARED src/game-over.c src/increment-vectors.c src/load_position.c src/make_move.c src/move_generation.c src/move_is_legal.c src/notation.c src/piece_list.c src/threats.c src/zobrist.c include/chess-lib.h)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+    add_compile_options(-Wall -Wextra -Wpedantic -Werror -DDEBUG)
     add_compile_options(-O3)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")

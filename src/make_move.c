@@ -114,22 +114,22 @@ void make_move(chess_state_t* chess_state, move_t move) {
   #include <stdio.h>
   if (is_null_move(move)) {
     trace_ply_stack(chess_state);
-    printf("illegal move detected (null move)");
+    printf("illegal move detected (null move)\n");
     abort();
   }
   if (piece(chess_state, move.to) & KING) {
     trace_ply_stack(chess_state);
-    printf("illegal move detected (captures king)");
+    printf("illegal move detected (captures king)\n");
     abort();
   }
   if (piece_is_friendly(chess_state, move.to)) {
     trace_ply_stack(chess_state);
-    printf("illegal move detected (captures friendly)");
+    printf("illegal move detected (captures friendly)\n");
     abort();
   }
   if (off_the_board(move.from) || off_the_board(move.to)) {
     trace_ply_stack(chess_state);
-    printf("illegal move detected (off the board)");
+    printf("illegal move detected (off the board)\n");
     abort();
   }
   #endif

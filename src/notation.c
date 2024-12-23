@@ -7,6 +7,8 @@
 #include "../include/private/chess-lib-internals.h"
 #include "../include/notation.h"
 
+#pragma region Debug Macros
+
 #ifdef DEBUG
 #define PRINT_READ_ERRORS
 #define PRINT_WRITE_ERRORS
@@ -24,6 +26,10 @@
 #define WRITE_ERROR(msg, args...) {buffer[0] = 0; return -1;}
 #endif
 
+#pragma endregion
+
+#pragma region Helper Functions
+
 long skip_whitespace(const char* buffer) {
   long bytes_read = 0;
   while (buffer[bytes_read] == ' '  || buffer[bytes_read] == '\t'
@@ -40,6 +46,10 @@ int is_file(char c) {
 int is_rank(char c) {
   return c >= '1' && c <= '8';
 }
+
+#pragma endregion
+
+#pragma region Square and Piece Read/Write
 
 long write_square(char* buffer, size_t buffer_size, sq0x88_t square) {
   if (buffer_size < 3) return -1;
@@ -96,6 +106,12 @@ long read_piece(const char* buffer, size_t buffer_size, piece_t* piece) {
   }
   return 1;
 }
+
+#pragma endregion
+
+#pragma region Algebraic Notation
+
+#pragma region Write Algebraic Notation
 
 void disambiguate_piece(chess_state_t* chess_state, sq0x88_t from, sq0x88_t to,
                        sq0x88_t* piece_list, int piece_count,
@@ -258,6 +274,10 @@ long write_algebraic_notation(char* buffer, size_t buffer_size,
   buffer[bytes_written] = '\0';
   return bytes_written;
 }
+
+#pragma endregion
+
+#pragma region Read Algebraic Notation
 
 int matches_disambiguation(sq0x88_t square, int rank, int file) {
   return (rank == -1 || sq0x88_to_rank07(square) == rank)
@@ -518,6 +538,11 @@ long read_algebraic_notation(const char* buffer, size_t buffer_size,
   return bytes_read;
 }
 
+#pragma endregion
+
+#pragma endregion
+
+#pragma region Long Algebraic Notation
 
 long write_long_algebraic_notation(char* buffer, size_t buffer_size,
                                    move_t move) {
@@ -615,6 +640,9 @@ long read_long_algebraic_notation(const char* buffer, size_t buffer_size,
   return bytes_read;
 }
 
+#pragma endregion
+
+#pragma region PGN
 
 long write_movetext_debug(char* buffer, size_t buffer_size,
                     const chess_state_t* chess_state) {
@@ -696,3 +724,11 @@ long write_pgn(char* buffer, size_t buffer_size,
   bytes_written += write_movetext(buffer + bytes_written, buffer_size - bytes_written, chess_state, fen);
   return bytes_written;
 }
+
+void trace_ply_stack(const chess_state_t* chess_state) {
+  char buffer[512];
+  write_movetext_debug(buffer, 512, chess_state);
+  fprintf(stderr, "%s\n", buffer);
+}
+
+#pragma endregion
