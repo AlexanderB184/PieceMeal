@@ -381,41 +381,41 @@ size_t sliding_captures(const chess_state_t* chess_state, move_t* moves,
 
 #define FOR_ALL_PIECES(MOVE_TYPE)                                            \
   do {                                                                       \
-    move_count = king_captures(chess_state, moves, move_count,               \
+    move_count = king_##MOVE_TYPE(chess_state, moves, move_count,               \
                                piece_lists->king_square, colour);            \
                                                                              \
     FOR_EACH_PIECE(piece_lists, queen, square) {                             \
       move_count =                                                           \
-          sliding_captures(chess_state, moves, move_count, square, colour,   \
+          sliding_##MOVE_TYPE(chess_state, moves, move_count, square, colour,   \
                            queen_increments_list, QUEEN_INCREMENTS_COUNT);   \
     }                                                                        \
                                                                              \
     FOR_EACH_PIECE(piece_lists, rook, square) {                              \
       move_count =                                                           \
-          sliding_captures(chess_state, moves, move_count, square, colour,   \
+          sliding_##MOVE_TYPE(chess_state, moves, move_count, square, colour,   \
                            rook_increments_list, ROOK_INCREMENTS_COUNT);     \
     }                                                                        \
                                                                              \
     FOR_EACH_PIECE(piece_lists, light_bishop, square) {                      \
       move_count =                                                           \
-          sliding_captures(chess_state, moves, move_count, square, colour,   \
+          sliding_##MOVE_TYPE(chess_state, moves, move_count, square, colour,   \
                            bishop_increments_list, BISHOP_INCREMENTS_COUNT); \
     }                                                                        \
                                                                              \
     FOR_EACH_PIECE(piece_lists, dark_bishop, square) {                       \
       move_count =                                                           \
-          sliding_captures(chess_state, moves, move_count, square, colour,   \
+          sliding_##MOVE_TYPE(chess_state, moves, move_count, square, colour,   \
                            bishop_increments_list, BISHOP_INCREMENTS_COUNT); \
     }                                                                        \
                                                                              \
     FOR_EACH_PIECE(piece_lists, knight, square) {                            \
       move_count =                                                           \
-          knight_captures(chess_state, moves, move_count, square, colour);   \
+          knight_##MOVE_TYPE(chess_state, moves, move_count, square, colour);   \
     }                                                                        \
                                                                              \
     FOR_EACH_PIECE(piece_lists, pawn, square) {                              \
       move_count =                                                           \
-          pawn_captures(chess_state, moves, move_count, square, colour);     \
+          pawn_##MOVE_TYPE(chess_state, moves, move_count, square, colour);     \
     }                                                                        \
   } while (0)
 
