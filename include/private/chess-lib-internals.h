@@ -36,18 +36,16 @@ void place_piece(chess_state_t* chess_state, sq0x88_t target, piece_t piece);
 void move_piece(chess_state_t* chess_state, sq0x88_t from, sq0x88_t to);
 
 size_t generate_moves_internal(const chess_state_t* chess_state,
-                               const piece_list_t* piece_lists, move_t* moves);
+                                  move_t* moves, colour_t colour);
 
 size_t generate_captures_internal(const chess_state_t* chess_state,
-                                  const piece_list_t* piece_lists,
-                                  move_t* moves);
+                                  move_t* moves, colour_t colour);
 
 size_t generate_quiets_internal(const chess_state_t* chess_state,
-                                const piece_list_t* piece_lists, move_t* moves);
+                                  move_t* moves, colour_t colour);
 
 size_t generate_promotions_internal(const chess_state_t* chess_state,
-                                    const piece_list_t* piece_lists,
-                                    move_t* moves);
+                                  move_t* moves, colour_t colour);
 
 // for each style loop for a specific piece in a piece list
 // can be queen, rook, light_bishop, dark_bishop, knight or pawn

@@ -276,14 +276,14 @@ long read_algebraic_notation(const char* buffer, size_t buffer_size,
   *read_move = null_move;
   
   if (buffer_size >= 3 && strncmp(buffer, "O-O", 3) == 0) {
-    if (!can_castle_king_side(chess_state)) {
+    if (!can_castle_king_side(chess_state, chess_state->friendly_colour)) {
       READ_ERROR("cannot legally castle king side.\n");
     }
     *read_move = move(chess_state->friendly_pieces->king_square, chess_state->friendly_pieces->king_square + 2, KING_CASTLE);
     return 3;
   }
   if (buffer_size >= 5 && strncmp(buffer, "O-O-O", 5) == 0) {
-    if (!can_castle_queen_side(chess_state)) {
+    if (!can_castle_queen_side(chess_state, chess_state->friendly_colour)) {
       READ_ERROR("cannot legally castle queen side.\n");
     }
     *read_move = move(chess_state->friendly_pieces->king_square, chess_state->friendly_pieces->king_square - 2, QUEEN_CASTLE);
