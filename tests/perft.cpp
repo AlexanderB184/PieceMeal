@@ -94,7 +94,7 @@ perft_results_t perft(chess_state_t* chess_state, int max_depth,
 
   size_t move_count;
   move_t moves[256];
-  move_count = generate_legal_moves(chess_state, moves, GENERATE_ALL);
+  move_count = generate_legal_moves(chess_state, moves, chess_state->friendly_colour);
   for (size_t i = 0; i < move_count; i++) {
     if (!is_pseudo_legal(chess_state, moves[i])) {
       trace_ply_stack(chess_state);

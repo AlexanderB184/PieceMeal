@@ -21,8 +21,14 @@ enum generator_mode {
   GENERATE_ALL = GENERATE_QUIETS | GENERATE_CAPTURES | GENERATE_PROMOTIONS,
 };
 
-size_t generate_moves(const chess_state_t* chess_state, move_t* moves, enum generator_mode generation_mode);
+size_t generate_moves(const chess_state_t* chess_state, move_t* moves, colour_t colour);
+size_t generate_captures(const chess_state_t* chess_state, move_t* moves, colour_t colour);
+size_t generate_quiets(const chess_state_t* chess_state, move_t* moves, colour_t colour);
+size_t generate_promotions(const chess_state_t* chess_state, move_t* moves, colour_t colour);
 
-size_t generate_legal_moves(const chess_state_t* chess_state, move_t* moves, enum generator_mode generation_mode);
+size_t generate_legal_moves(const chess_state_t* chess_state, move_t* moves, colour_t colour);
+size_t generate_legal_captures(const chess_state_t* chess_state, move_t* moves, colour_t colour);
+size_t generate_legal_quiets(const chess_state_t* chess_state, move_t* moves, colour_t colour);
+size_t generate_legal_promotions(const chess_state_t* chess_state, move_t* moves, colour_t colour);
 
 #endif

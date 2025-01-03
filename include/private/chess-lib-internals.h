@@ -51,7 +51,9 @@ sq0x88_t pawn_push_increment(colour_t colour);
 const piece_list_t* get_piece_list(const chess_state_t* chess_state, colour_t colour);
 
 int is_legal_internal(const chess_state_t* chess_state, move_t move, colour_t colour);
+
 size_t generate_moves_internal(const chess_state_t* chess_state, move_t * moves, colour_t colour, enum generator_mode generation_mode);
+size_t generate_moves_nocheck_internal(const chess_state_t* chess_state, move_t * moves, colour_t colour, enum generator_mode generation_mode);
 size_t generate_moves_check_internal(const chess_state_t* chess_state, move_t * moves, colour_t colour, enum generator_mode generation_mode);
 
 #define FOR_EACH_PIECE(PIECE_LIST, PIECE_TYPE, IDENTIFIER)                     \

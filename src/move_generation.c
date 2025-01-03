@@ -292,9 +292,9 @@ size_t sliding_moves(const chess_state_t* chess_state, move_t* moves,
     }                                                                          \
   } while (0)
 
-size_t generate_moves_internal(const chess_state_t* chess_state, move_t* moves,
-                               colour_t colour,
-                               enum generator_mode generation_mode) {
+size_t generate_moves_nocheck_internal(const chess_state_t* chess_state,
+                                       move_t* moves, colour_t colour,
+                                       enum generator_mode generation_mode) {
   size_t move_count = 0;
   const piece_list_t* piece_lists = get_piece_list(chess_state, colour);
   move_count =
@@ -523,7 +523,7 @@ size_t generate_interposing_moves(const chess_state_t* chess_state,
 
     } else if (generation_mode & GENERATE_QUIETS) {
       from = target - pawn_inc;
-      //printf("from %d target %d\n", from, target);
+      // printf("from %d target %d\n", from, target);
       if (!off_the_board(from) && piece(chess_state, from) == friendly_pawn) {
         moves[move_count++] = move(from, target, QUIET_MOVE);
       }
@@ -574,8 +574,8 @@ size_t generate_moves_check_internal(const chess_state_t* chess_state,
   }
   sq0x88_t inc = queen_increment(king_square, checking_square(chess_state));
   move_count = generate_interposing_moves(
-      chess_state, moves, move_count, colour, generation_mode, king_square + inc,
-      checking_square(chess_state), inc);
+      chess_state, moves, move_count, colour, generation_mode,
+      king_square + inc, checking_square(chess_state), inc);
 
   return move_count;
 }
@@ -584,28 +584,38 @@ size_t generate_moves_check_internal(const chess_state_t* chess_state,
 
 #pragma region Pseudo Legal Move Generators
 
-#define MOVE_GENERATOR(MOVE_TYPE)                          \
-  if (is_check(chess_state)) {                             \
-    move_count = generate_##MOVE_TYPE##_check_internal(    \
-        chess_state, moves, chess_state->friendly_colour); \
-  } else {                                                 \
-    move_count = generate_##MOVE_TYPE##_internal(          \
-        chess_state, moves, chess_state->friendly_colour); \
-  }
-
-size_t generate_moves(const chess_state_t* chess_state, move_t* moves,
-                      enum generator_mode generation_mode) {
+size_t generate_moves_internal(const chess_state_t* chess_state, move_t* moves,
+                               colour_t colour,
+                               enum generator_mode generation_mode) {
   size_t move_count;
 
   if (is_check(chess_state)) {
-    move_count = generate_moves_check_internal(
-        chess_state, moves, chess_state->friendly_colour, generation_mode);
+    move_count = generate_moves_check_internal(chess_state, moves, colour,
+                                               generation_mode);
   } else {
-    move_count = generate_moves_internal(
-        chess_state, moves, chess_state->friendly_colour, generation_mode);
+    move_count = generate_moves_nocheck_internal(chess_state, moves, colour,
+                                                 generation_mode);
   }
 
   return move_count;
+}
+
+size_t generate_moves(const chess_state_t* chess_state, move_t* moves,
+                      colour_t colour) {
+  return generate_moves_internal(chess_state, moves, colour, GENERATE_ALL);
+}
+size_t generate_captures(const chess_state_t* chess_state, move_t* moves,
+                         colour_t colour) {
+  return generate_moves_internal(chess_state, moves, colour, GENERATE_CAPTURES);
+}
+size_t generate_quiets(const chess_state_t* chess_state, move_t* moves,
+                       colour_t colour) {
+  return generate_moves_internal(chess_state, moves, colour, GENERATE_QUIETS);
+}
+size_t generate_promotions(const chess_state_t* chess_state, move_t* moves,
+                           colour_t colour) {
+  return generate_moves_internal(chess_state, moves, colour,
+                                 GENERATE_PROMOTIONS);
 }
 
 #pragma endregion
@@ -623,9 +633,27 @@ size_t remove_illegal_moves(const chess_state_t* chess_state, move_t* moves,
 }
 
 size_t generate_legal_moves(const chess_state_t* chess_state, move_t* moves,
-                            enum generator_mode generation_mode) {
-  return remove_illegal_moves(
-      chess_state, moves, generate_moves(chess_state, moves, generation_mode));
+                            colour_t colour) {
+  return remove_illegal_moves(chess_state, moves,
+                              generate_moves(chess_state, moves, colour));
+}
+
+size_t generate_legal_captures(const chess_state_t* chess_state, move_t* moves,
+                               colour_t colour) {
+  return remove_illegal_moves(chess_state, moves,
+                              generate_captures(chess_state, moves, colour));
+}
+
+size_t generate_legal_quiets(const chess_state_t* chess_state, move_t* moves,
+                             colour_t colour) {
+  return remove_illegal_moves(chess_state, moves,
+                              generate_quiets(chess_state, moves, colour));
+}
+
+size_t generate_legal_promotions(const chess_state_t* chess_state,
+                                 move_t* moves, colour_t colour) {
+  return remove_illegal_moves(chess_state, moves,
+                              generate_promotions(chess_state, moves, colour));
 }
 
 #pragma endregion
