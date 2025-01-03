@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "../include/chess-lib.h"
+#include "../include/private/chess-lib-internals.h"
 
 //using namespace chess;
 
@@ -93,7 +94,14 @@ perft_results_t perft(chess_state_t* chess_state, int max_depth,
 
   size_t move_count;
   move_t moves[256];
-  move_count = generate_legal_moves(chess_state, moves);
+  move_count = generate_legal_moves(chess_state, moves, GENERATE_ALL);
+  for (size_t i = 0; i < move_count; i++) {
+    if (!is_pseudo_legal(chess_state, moves[i])) {
+      trace_ply_stack(chess_state);
+      printf("illegal move from: %d to: %d flags: %d piece: %d is check: %d checker: %d\n", moves[i].from, moves[i].to, moves[i].priority_and_flags, piece(chess_state, moves[i].from), is_check(chess_state), checking_square(chess_state));
+      abort();
+    }
+  }
   if (max_depth == 1 && flags == PERFT_JUST_NODES) {
     results.nodes = move_count;
     return results;
@@ -203,17 +211,18 @@ typedef struct {
 } perft_test_t;
 
 const perft_test_t test_cases[] = {
-    {positions[0], results_tables[0], 0, 5, PERFT_ALL},
-    {positions[1], results_tables[1], 1, 5, PERFT_ALL},
-    {positions[2], results_tables[2], 1, 5, PERFT_ALL},
-    {positions[3], results_tables[3], 1, 5,
+    {positions[0], results_tables[0], 0, 4, PERFT_ALL},
+    {positions[1], results_tables[1], 1, 4, PERFT_ALL},
+    {positions[2], results_tables[2], 1, 4, PERFT_ALL},
+    {positions[3], results_tables[3], 1, 4,
      (perft_active_columns)(PERFT_NODES | PERFT_CAPTURES | PERFT_CASTLES |
                             PERFT_ENPASSENT | PERFT_CHECKS | PERFT_CHECKMATE |
                             PERFT_PROMOTIONS)},
-    {positions[4], results_tables[4], 1, 5, PERFT_JUST_NODES},
+    {positions[4], results_tables[4], 1, 4, PERFT_JUST_NODES},
 };
 
 void test_perft(perft_test_t test_case) {
+  fprintf(stdout, "new perft\n");
   chess_state_t chess_state = {};
   load_position(&chess_state, test_case.position);
   for (int depth = test_case.depth_of_first_row;

@@ -82,8 +82,14 @@ int is_pinned_enpassent(const chess_state_t* chess_state, move_t move, colour_t 
 
 void trace_ply_stack(const chess_state_t* chess_state) {
   char buffer[512];
+  fprintf(stdout, "error at ply %d %d\n", chess_state->ply_counter, chess_state->black_to_move);
+  for (int i = 0; i < chess_state->ply_counter; i++) {
+    move_t move = chess_state->ply_stack[i].move;
+    fprintf(stdout, "%d %d %d\n", move.from, move.to, move.priority_and_flags);
+    
+  }
   write_movetext_debug(buffer, 512, chess_state);
-  fprintf(stderr, "%s\n", buffer);
+  fprintf(stdout, "%s\n", buffer);
 }
 
 int is_legal_king_move(const chess_state_t* chess_state, move_t move, colour_t colour) {
@@ -97,6 +103,34 @@ int is_legal_king_move(const chess_state_t* chess_state, move_t move, colour_t c
   }
   if (is_king_castle(move)) {
     return !is_under_attack(chess_state, from + 1, enemy_colour);
+  }
+  return 1;
+}
+
+int is_moving_out_of_check(const chess_state_t* chess_state, move_t move,
+                           sq0x88_t king_square, colour_t colour) {
+  if (colour != chess_state->friendly_colour) return 1;
+  sq0x88_t from = get_from(move);
+  sq0x88_t to = get_to(move);
+  if (!is_enpassent(move)) {
+    if (is_capture(move) && to != checking_square(chess_state)) {
+      return 0;
+    }
+    if (!is_capture(move)) {
+      sq0x88_t inc = queen_increment(king_square, to);
+      if (inc == 0 ||
+          inc != queen_increment(to, checking_square(chess_state))) {
+        return 0;
+      }
+    }
+  } else {
+    sq0x88_t inc = queen_increment(king_square, to);
+    if (rankfile_to_sq0x88(sq0x88_to_rank07(from), sq0x88_to_file07(to)) !=
+            checking_square(chess_state) &&
+        (inc == 0 ||
+         inc != queen_increment(to, checking_square(chess_state)))) {
+      return 0;
+    }
   }
   return 1;
 }
@@ -120,6 +154,9 @@ int is_legal_internal(const chess_state_t* chess_state, move_t move, colour_t co
   if (from == king_square) {  // king moves
     return is_legal_king_move(chess_state, move, colour);
   }
+  //if (is_check(chess_state) && !is_moving_out_of_check(chess_state, move, king_square, colour)) {
+  //  return 0;
+  //}
   if (is_enpassent(move)) {
     if (is_pinned_enpassent(chess_state, move, colour)) return 0;
   }

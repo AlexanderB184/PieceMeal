@@ -52,7 +52,7 @@ int is_draw(const chess_state_t* chess_state) {
 int is_checkmate(const chess_state_t* chess_state) {
   if (!is_check(chess_state)) return 0;
   move_t moves[256];
-  size_t move_count = generate_moves(chess_state, moves);
+  size_t move_count = generate_moves(chess_state, moves, GENERATE_ALL);
   for (size_t i = 0; i < move_count; i++) {
     if (is_legal(chess_state, moves[i])) {
       return 0;
@@ -64,7 +64,7 @@ int is_checkmate(const chess_state_t* chess_state) {
 int is_stalemate(const chess_state_t* chess_state) {
   if (is_check(chess_state)) return 0;
   move_t moves[256];
-  size_t move_count = generate_moves(chess_state, moves);
+  size_t move_count = generate_moves(chess_state, moves, GENERATE_ALL);
   for (size_t i = 0; i < move_count; i++) {
     if (is_legal(chess_state, moves[i])) {
       return 0;
