@@ -183,7 +183,7 @@ int is_pseudo_legal_pawn_move(const chess_state_t* chess_state, move_t move, col
   sq0x88_t to = get_to(move);
   sq0x88_t inc = pawn_push_increment(colour);
   if (is_double_pawn_push(move)) {
-    return (sq0x88_to_rank07(from) == 1 || sq0x88_to_rank07(from) == 6) && (sq0x88_t)(from + 2 * inc) == to && piece_is_empty(chess_state, to - inc) &&
+    return (sq0x88_to_rank07(from) == 1 || sq0x88_to_rank07(from) == 6) && (sq0x88_t)(from + 2 * inc) == to && piece_is_empty(chess_state, from + inc) &&
            piece_is_empty(chess_state, to);
   }
   if (is_enpassent(move) && enpassent_target(chess_state) != to && colour == chess_state->friendly_colour) {
@@ -309,10 +309,10 @@ int is_pseudo_legal_internal(const chess_state_t* chess_state, move_t move, colo
 
   sq0x88_t check_square = checking_square(chess_state);
   // capturing checking piece
-  if (is_enpassent(move) && check_square == enpassent_target(chess_state) - chess_state->up_increment) {
+  if (is_enpassent(move) && check_square == enpassent_target(chess_state) - pawn_push_increment(colour)) {
     return 1;
   }
-  if (is_capture(move)) {
+  if (is_capture(move) && !is_enpassent(move)) {
     return to == check_square;
   }
   // checker is not interposable

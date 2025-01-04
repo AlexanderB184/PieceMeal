@@ -149,6 +149,7 @@ TEST_CASE("king move in check", "[PSEUDO LEGAL MOVE]") {
   CHECK(is_pseudo_legal(&chess_state, move(e1, e2, QUIET_MOVE)) ==
         1);  // king move
 }
+
 TEST_CASE("non interposing move in check", "[PSEUDO LEGAL MOVE]") {
   load_position(
       &chess_state,
@@ -160,19 +161,18 @@ TEST_CASE("non interposing move in check", "[PSEUDO LEGAL MOVE]") {
 TEST_CASE("interposing move", "[PSEUDO LEGAL MOVE]") {
   load_position(&chess_state, "8/K4r2/4P1P1/3P2k1/8/8/8/8 w - - 0 1");
   CHECK(is_pseudo_legal(&chess_state, move(e6, e7, QUIET_MOVE)) == 1);
-  load_position(&chess_state, "8/K4r2/4P1P1/3P2k1/8/8/8/8 w - - 0 1");
 }
-TEST_CASE("Capture Checking piece", "[PSEUDO LEGAL MOVE]") {
-  CHECK(is_pseudo_legal(&chess_state, move(e6, f7, CAPTURE)) == 1);
+TEST_CASE("capture checking piece", "[PSEUDO LEGAL MOVE]") {
   load_position(&chess_state, "8/K4r2/4P1P1/3P2k1/8/8/8/8 w - - 0 1");
+  CHECK(is_pseudo_legal(&chess_state, move(e6, f7, CAPTURE)) == 1);
 }
 TEST_CASE("invalid double pawn push tp interpose", "[PSEUDO LEGAL MOVE]") {
-  CHECK(is_pseudo_legal(&chess_state, move(d5, d7, DOUBLE_PAWN_PUSH)) == 0);
   load_position(&chess_state, "8/K4r2/4P1P1/3P2k1/8/8/8/8 w - - 0 1");
+  CHECK(is_pseudo_legal(&chess_state, move(d5, d7, DOUBLE_PAWN_PUSH)) == 0);
 }
 TEST_CASE("interpose falls short", "[PSEUDO LEGAL MOVE]") {
-  CHECK(is_pseudo_legal(&chess_state, move(d5, d6, QUIET_MOVE)) == 0);
   load_position(&chess_state, "8/K4r2/4P1P1/3P2k1/8/8/8/8 w - - 0 1");
+  CHECK(is_pseudo_legal(&chess_state, move(d5, d6, QUIET_MOVE)) == 0);
 }
 TEST_CASE("interpose on wrong side of sliding piece", "[PSEUDO LEGAL MOVE]") {
   CHECK(is_pseudo_legal(&chess_state, move(g6, g7, QUIET_MOVE)) == 0);
