@@ -24,6 +24,7 @@ void remove_piece(chess_state_t* chess_state, sq0x88_t target) {
   } else if (piece & BLACK) {
     pl = &chess_state->black_pieces;
   } else {
+    trace_ply_stack(chess_state);
     assert(0 && "piece has no colour");
     return;
   }
