@@ -1,0 +1,32 @@
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 # start position
+rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1 # pawn capture
+rnbqkbnr/ppp2ppp/8/3Pp3/8/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2 # ep capture
+rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 # black to move
+rnbqkbnr/ppp1pppp/8/3p4/4P3/3P4/PPP2PPP/RNBQKBNR b KQkq - 0 2 # black pawn capture
+rnbqkbnr/ppp1pppp/8/8/2PpP3/5P2/PP1P2PP/RNBQKBNR b KQkq c3 0 3 # black ep capture
+rnbqkbnr/pp1pppp1/8/2pP3p/8/8/PPP1PPPP/RNBQKBNR w KQkq c6 0 3 # white ep capture opposite side
+rnbqkbnr/pppp1ppp/8/8/PP2pP2/8/2PPP1PP/RNBQKBNR b KQkq f3 0 3 # black ep capture opposite side
+2n2K2/1P6/8/8/8/8/8/7k w - - 0 1 # white pawn promotion
+5K2/8/8/8/8/8/2p5/3N3k b - - 0 1 # black pawn promotion
+r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 2 4 # white can castle king side
+rnbqk2r/pppp1ppp/5n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 5 4 # black can castle king side
+r2qkbnr/ppp1pppp/2n5/3p1b2/3P1B2/2N5/PPPQPPPP/R3KBNR b KQkq - 5 4 # white can castle queen side
+r3kbnr/ppp1pppp/2nq4/3p1b2/3P1B2/2N1Q3/PPP1PPPP/R3KBNR b KQkq - 7 5 # black can castle queen side
+4k3/8/8/8/8/8/4b3/R3K2R w KQ - 0 1 # white castling blocked by bishop 1 square adjacent
+4k3/8/8/8/8/4b3/8/R3K2R w KQ - 0 1 # white castling blocked by bishop 2 square adjacent
+4k3/8/8/8/4b3/8/8/R3K2R w KQ - 0 1 # white castling blocked by bishop 3 square adjacent
+4k3/8/8/4b3/8/8/8/R3K2R w KQ - 0 1 # white castling blocked by bishop 4 square adjacent
+4k3/8/8/4b3/8/8/8/R3K2R w KQ - 0 1 # white castling blocked by check
+4k3/8/8/8/1b6/3N4/8/4K3 w - - 0 1 # knight can capture checker
+4k3/8/8/2B5/1b6/8/8/4K3 w - - 0 1 # bishop can capture checker
+4k3/8/8/8/1b3R2/8/8/4K3 w - - 0 1 # rook can capture checker
+4k3/8/8/8/1b3Q2/8/8/4K3 w - - 0 1 # queen can capture checker
+4k3/8/8/8/1b6/P7/8/4K3 w - - 0 1 # pawn can capture checker
+4k3/8/8/3Pp3/3K4/8/8/8 w - e6 0 1 # pawn can ep capture checker
+4k3/8/4BR2/8/3K3r/5P2/4PN2/6Q1 w - - 0 1 # interposing moves
+r4K2/1P6/8/8/8/8/8/7k w - - 0 1 # promote to escape check
+5K2/7Q/4B3/2q1Rr2/8/8/8/7k w - - 0 1 # king double checked
+r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1 # Kiwipete
+8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1 # perft pos 3
+r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1 # perft pos 4
+rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8 perft pos 5

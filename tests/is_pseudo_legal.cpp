@@ -61,7 +61,7 @@ void recursive_test(chess_state_t* position, int depth) {
   move_t moves[256];
   move_t moves2[256];
   size_t count = gen_moves(position, moves);
-  size_t count2 = generate_moves(position, moves2);
+  size_t count2 = generate_moves(position, moves2, position->friendly_colour);
   CHECK(count == count2);
   
   if (count != count2) {
