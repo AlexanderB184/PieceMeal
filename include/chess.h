@@ -1,8 +1,6 @@
 #ifndef CHESS_H
 #define CHESS_H
 
-#define DEBUG
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -8,19 +8,20 @@
 void push_ply_stack(chess_state_t* chess_state, move_t move) {
   if (chess_state->ply_counter >= chess_state->ply_stack_capacity) {
     chess_state->ply_stack_capacity = chess_state->ply_stack_capacity * 2;
-    size_t ply_stack_size = sizeof(ply_stack_item_t) * chess_state->ply_stack_capacity;
+    size_t ply_stack_size =
+        sizeof(ply_stack_item_t) * chess_state->ply_stack_capacity;
     chess_state->ply_stack = realloc(chess_state->ply_stack, ply_stack_size);
   }
   chess_state->ply_stack[chess_state->ply_counter++] = (ply_stack_item_t){
-      .move              = move,
-      .enpassent         = chess_state->enpassent_target,
-      .half_move_clock   = chess_state->half_move_clock,
-      .rights            = chess_state->castle_rights,
-      .captured          = piece(chess_state, get_to(move)),
-      .zobrist           = chess_state->zobrist,
-      .check_square      = chess_state->check_square,
-      .n_checks          = chess_state->n_checks,
-      .discovered_check  = chess_state->discovered_check,
+      .move = move,
+      .enpassent = chess_state->enpassent_target,
+      .half_move_clock = chess_state->half_move_clock,
+      .rights = chess_state->castle_rights,
+      .captured = piece(chess_state, get_to(move)),
+      .zobrist = chess_state->zobrist,
+      .check_square = chess_state->check_square,
+      .n_checks = chess_state->n_checks,
+      .discovered_check = chess_state->discovered_check,
       .last_irreversible = chess_state->ply_of_last_irreversible_move,
   };
 }
@@ -30,7 +31,8 @@ void update_board(chess_state_t* chess_state, move_t move) {
   sq0x88_t to = get_to(move);
 
   if (is_enpassent(move)) {
-    remove_piece(chess_state, chess_state->enpassent_target - chess_state->up_increment);
+    remove_piece(chess_state,
+                 chess_state->enpassent_target - chess_state->up_increment);
   } else if (is_capture(move)) {
     remove_piece(chess_state, to);
   }
@@ -109,13 +111,14 @@ void update_turn(chess_state_t* chess_state) {
 }
 
 void make_move(chess_state_t* chess_state, move_t move) {
-  #ifdef DEBUG
-  #include <stdio.h>
   if (is_null_move(move)) {
-    trace_ply_stack(chess_state);
-    printf("illegal move detected (null move)");
-    abort();
+    push_ply_stack(chess_state, move);
+    update_half_move_clock(chess_state, move);
+    update_enpassent_target(chess_state, move);
+    update_turn(chess_state);
+    return;
   }
+#ifdef DEBUG
   if (piece(chess_state, move.to) & KING) {
     trace_ply_stack(chess_state);
     printf("illegal move detected (captures king)");
@@ -131,7 +134,7 @@ void make_move(chess_state_t* chess_state, move_t move) {
     printf("illegal move detected (off the board)");
     abort();
   }
-  #endif
+#endif
   push_ply_stack(chess_state, move);
   update_half_move_clock(chess_state, move);
   update_board(chess_state, move);
@@ -146,12 +149,12 @@ void unmake_move(chess_state_t* chess_state) {
   ply_stack_item_t unwound_state =
       chess_state->ply_stack[--chess_state->ply_counter];
 
-  chess_state->check_square                  = unwound_state.check_square;
-  chess_state->discovered_check              = unwound_state.discovered_check;
-  chess_state->n_checks                      = unwound_state.n_checks;
-  chess_state->enpassent_target              = unwound_state.enpassent;
-  chess_state->castle_rights                 = unwound_state.rights;
-  chess_state->half_move_clock               = unwound_state.half_move_clock;
+  chess_state->check_square = unwound_state.check_square;
+  chess_state->discovered_check = unwound_state.discovered_check;
+  chess_state->n_checks = unwound_state.n_checks;
+  chess_state->enpassent_target = unwound_state.enpassent;
+  chess_state->castle_rights = unwound_state.rights;
+  chess_state->half_move_clock = unwound_state.half_move_clock;
   chess_state->ply_of_last_irreversible_move = unwound_state.last_irreversible;
 
   move_t prev_move = unwound_state.move;
