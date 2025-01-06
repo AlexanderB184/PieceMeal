@@ -34,6 +34,7 @@ add_executable(test_is_check tests/is_check.cpp)
 add_executable(test_is_pseudo_legal tests/pseudo_legal.cpp)
 add_executable(test_is_legal tests/is_legal.cpp)
 add_executable(test_inc_movegen tests/incremental_movegen.cpp)
+add_executable(alphaBeta tests/alpha_beta.cpp)
 
 # Link the test executables with Catch2
 target_link_libraries(test_perft PRIVATE Catch2::Catch2WithMain chess)
@@ -41,6 +42,7 @@ target_link_libraries(test_is_check PRIVATE Catch2::Catch2WithMain chess)
 target_link_libraries(test_is_pseudo_legal PRIVATE Catch2::Catch2WithMain chess)
 target_link_libraries(test_is_legal PRIVATE Catch2::Catch2WithMain chess)
 target_link_libraries(test_inc_movegen PRIVATE Catch2::Catch2WithMain chess)
+target_link_libraries(alphaBeta PRIVATE chess)
 
 include(CTest)
 include(Catch)
