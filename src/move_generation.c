@@ -9,12 +9,16 @@
 #define BISHOP_INCREMENTS_COUNT 4
 #define ROOK_INCREMENTS_COUNT 4
 
-static const sq0x88_t king_increments_list[KING_INCREMENTS_COUNT] = {1, 255, 240, 16, 241, 239, 15, 17};
-static const sq0x88_t knight_increments_list[KNIGHT_INCREMENTS_COUNT] = {18, 14, 33, 31, 242, 238, 225, 223};
-static const sq0x88_t queen_increments_list[QUEEN_INCREMENTS_COUNT] = {1, 255, 240, 16, 241, 239, 15, 17};
-static const sq0x88_t bishop_increments_list[BISHOP_INCREMENTS_COUNT] = {241, 239, 15, 17};
-static const sq0x88_t rook_increments_list[ROOK_INCREMENTS_COUNT] = {1, 255, 240, 16};
-
+static const sq0x88_t king_increments_list[KING_INCREMENTS_COUNT] = {
+    1, 255, 240, 16, 241, 239, 15, 17};
+static const sq0x88_t knight_increments_list[KNIGHT_INCREMENTS_COUNT] = {
+    18, 14, 33, 31, 242, 238, 225, 223};
+static const sq0x88_t queen_increments_list[QUEEN_INCREMENTS_COUNT] = {
+    1, 255, 240, 16, 241, 239, 15, 17};
+static const sq0x88_t bishop_increments_list[BISHOP_INCREMENTS_COUNT] = {
+    241, 239, 15, 17};
+static const sq0x88_t rook_increments_list[ROOK_INCREMENTS_COUNT] = {1, 255,
+                                                                     240, 16};
 
 // todo
 // make piece list base move generation functions i.e. size_t
@@ -24,47 +28,7 @@ static const sq0x88_t rook_increments_list[ROOK_INCREMENTS_COUNT] = {1, 255, 240
 
 #pragma region Helper Functions
 
-colour_t piece_colour(const chess_state_t* chess_state, sq0x88_t square) {
-  return (piece(chess_state, square) & COLOUR_MASK);
-}
 
-int piece_is_colour(const chess_state_t* chess_state, sq0x88_t square,
-                    colour_t colour) {
-  return piece_colour(chess_state, square) == colour;
-}
-
-colour_t opposite_colour(colour_t colour) {
-  switch (colour & COLOUR_MASK) {
-    case BLACK:
-      return WHITE;
-    case WHITE:
-      return BLACK;
-    default:
-      return EMPTY;
-  }
-}
-
-sq0x88_t pawn_push_increment(colour_t colour) {
-  return (colour & WHITE) ? (sq0x88_t)(A2 - A1) : (sq0x88_t)(A1 - A2);
-}
-
-const piece_list_t* get_piece_list(const chess_state_t* chess_state,
-                                   colour_t colour) {
-  return (colour & WHITE) ? &chess_state->white_pieces
-                          : &chess_state->black_pieces;
-}
-
-int is_promoting(const chess_state_t* chess_state, sq0x88_t from,
-                 colour_t colour) {
-  return (sq0x88_to_rank07(from) == 1 && colour == BLACK) ||
-         (sq0x88_to_rank07(from) == 6 && colour == WHITE);
-}
-
-int pawn_can_double_push(const chess_state_t* chess_state, sq0x88_t from,
-                         colour_t colour) {
-  return (sq0x88_to_rank07(from) == 6 && colour == BLACK) ||
-         (sq0x88_to_rank07(from) == 1 && colour == WHITE);
-}
 
 int can_capture_enpassent(const chess_state_t* chess_state, sq0x88_t from,
                           colour_t colour) {
@@ -185,7 +149,7 @@ size_t pawn_moves(const chess_state_t* chess_state, move_t* moves,
   sq0x88_t inc = pawn_push_increment(colour);
   colour_t enemy_colour = opposite_colour(colour);
   sq0x88_t to = from + inc;
-  if (is_promoting(chess_state, from, colour)) {
+  if (is_promoting(from, colour)) {
     if (!(generation_mode & GENERATE_PROMOTIONS)) {
       return move_count;
     }
@@ -209,7 +173,7 @@ size_t pawn_moves(const chess_state_t* chess_state, move_t* moves,
     to = from + 2 * inc;
     if (!off_the_board(to) && piece(chess_state, to) == EMPTY &&
         piece(chess_state, to - inc) == EMPTY &&
-        pawn_can_double_push(chess_state, from, colour)) {
+        pawn_can_double_push(from, colour)) {
       moves[move_count++] = move(from, to, DOUBLE_PAWN_PUSH);
     }
   }
@@ -244,12 +208,42 @@ size_t sliding_moves(const chess_state_t* chess_state, move_t* moves,
   for (sq0x88_t i = 0; i < increments_count; i++) {
     sq0x88_t inc = increments[i];
     sq0x88_t to;
-    for (to = from + inc; piece(chess_state, to) == EMPTY; to += inc) {
-      if (generation_mode & GENERATE_QUIETS) {
+    if (generation_mode & GENERATE_QUIETS) {
+      for (to = from + inc; piece(chess_state, to) == EMPTY; to += inc) {
         moves[move_count++] = move(from, to, QUIET_MOVE);
       }
+    } else {
+      to = forwards_ray_cast(chess_state, from, inc);
     }
     if (!(generation_mode & GENERATE_CAPTURES) || off_the_board(to) ||
+        piece_is_colour(chess_state, to, colour))
+      continue;
+
+    moves[move_count++] = move(from, to, CAPTURE);
+  }
+  return move_count;
+}
+
+size_t sliding_quiets(const chess_state_t* chess_state, move_t* moves,
+                     size_t move_count, sq0x88_t from, colour_t colour,
+                     const sq0x88_t* increments, int increments_count) {
+  for (sq0x88_t i = 0; i < increments_count; i++) {
+    sq0x88_t inc = increments[i];
+    sq0x88_t to;
+      for (to = from + inc; piece(chess_state, to) == EMPTY; to += inc) {
+        moves[move_count++] = move(from, to, QUIET_MOVE);
+      }
+  }
+  return move_count;
+}
+
+size_t sliding_captures(const chess_state_t* chess_state, move_t* moves,
+                     size_t move_count, sq0x88_t from, colour_t colour,
+                     const sq0x88_t* increments, int increments_count) {
+  for (sq0x88_t i = 0; i < increments_count; i++) {
+    sq0x88_t inc = increments[i];
+    sq0x88_t to = forwards_ray_cast(chess_state, from, inc);
+    if (off_the_board(to) ||
         piece_is_colour(chess_state, to, colour))
       continue;
 
@@ -418,7 +412,7 @@ size_t generate_captures_of(const chess_state_t* chess_state, move_t* moves,
   sq0x88_t inc = pawn_push_increment(colour);
   sq0x88_t from;
   piece_t friendly_pawn = colour | PAWN;
-  if (is_promoting(chess_state, target - inc, colour)) {
+  if (is_promoting(target - inc, colour)) {
     if (generation_mode & GENERATE_PROMOTIONS) {
       from = target - inc + 1;
       if (!off_the_board(from) && piece(chess_state, from) == friendly_pawn) {
@@ -542,7 +536,7 @@ size_t generate_interposing_moves(const chess_state_t* chess_state,
       from = target - 2 * pawn_inc;
       if (!off_the_board(from) && piece(chess_state, from) == friendly_pawn &&
           piece(chess_state, target - pawn_inc) == EMPTY &&
-          pawn_can_double_push(chess_state, from, colour)) {
+          pawn_can_double_push(from, colour)) {
         moves[move_count++] = move(from, target, DOUBLE_PAWN_PUSH);
       }
     }

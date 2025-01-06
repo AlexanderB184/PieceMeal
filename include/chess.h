@@ -478,6 +478,48 @@ static inline move_t uncompress_move(compact_move_t compact_move) {
               compact_move >> 12);
 }
 
+static inline colour_t piece_colour(const chess_state_t* chess_state, sq0x88_t square) {
+  return (piece(chess_state, square) & COLOUR_MASK);
+}
+
+static inline int piece_is_colour(const chess_state_t* chess_state, sq0x88_t square,
+                    colour_t colour) {
+  return piece_colour(chess_state, square) == colour;
+}
+
+static inline colour_t opposite_colour(colour_t colour) {
+  switch (colour & COLOUR_MASK) {
+    case BLACK:
+      return WHITE;
+    case WHITE:
+      return BLACK;
+    default:
+      return EMPTY;
+  }
+}
+
+static inline sq0x88_t pawn_push_increment(colour_t colour) {
+  return (colour & WHITE) ? (sq0x88_t)(A2 - A1) : (sq0x88_t)(A1 - A2);
+}
+
+static inline const piece_list_t* get_piece_list(const chess_state_t* chess_state,
+                                   colour_t colour) {
+  return (colour & WHITE) ? &chess_state->white_pieces
+                          : &chess_state->black_pieces;
+}
+
+static inline int is_promoting(sq0x88_t from,
+                 colour_t colour) {
+  return (sq0x88_to_rank07(from) == 1 && colour == BLACK) ||
+         (sq0x88_to_rank07(from) == 6 && colour == WHITE);
+}
+
+static inline int pawn_can_double_push(sq0x88_t from,
+                         colour_t colour) {
+  return (sq0x88_to_rank07(from) == 6 && colour == BLACK) ||
+         (sq0x88_to_rank07(from) == 1 && colour == WHITE);
+}
+
 sq0x88_t queen_increment(sq0x88_t from, sq0x88_t to);
 
 sq0x88_t rook_increment(sq0x88_t from, sq0x88_t to);
@@ -500,16 +542,13 @@ int is_double_check(const chess_state_t* chess_state);
 // returns true if the king is checked through a discovered attack
 int is_discover_check(const chess_state_t* chess_state);
 
+//
+int is_check_after_move(const chess_state_t* chess_state, move_t move);
+
 // returns the square of the checking piece, if there is no checking piece it
 // will return 0x88. if the position is double check it has undefined value and
 // should not be used.
 sq0x88_t checking_square(const chess_state_t* chess_state);
-
-int is_promoting(const chess_state_t* chess_state, sq0x88_t from,
-                 colour_t colour);
-
-int pawn_can_double_push(const chess_state_t* chess_state, sq0x88_t from,
-                         colour_t colour);
 
 int can_capture_enpassent(const chess_state_t*, sq0x88_t from, colour_t colour);
 
@@ -716,18 +755,6 @@ void remove_piece(chess_state_t* chess_state, sq0x88_t target);
 void place_piece(chess_state_t* chess_state, sq0x88_t target, piece_t piece);
 
 void move_piece(chess_state_t* chess_state, sq0x88_t from, sq0x88_t to);
-
-colour_t piece_colour(const chess_state_t* chess_state, sq0x88_t square);
-
-int piece_is_colour(const chess_state_t* chess_state, sq0x88_t square,
-                    colour_t colour);
-
-colour_t opposite_colour(colour_t colour);
-
-sq0x88_t pawn_push_increment(colour_t colour);
-
-const piece_list_t* get_piece_list(const chess_state_t* chess_state,
-                                   colour_t colour);
 
 int is_legal_internal(const chess_state_t* chess_state, move_t move,
                       colour_t colour);
