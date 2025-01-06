@@ -224,7 +224,7 @@ int is_pseudo_legal_internal(const chess_state_t* chess_state, move_t move, colo
 
   // validate move flags
   if (is_promotion(move) && ((piece(chess_state, from) & PIECE_MASK) != PAWN ||
-      !is_promoting(chess_state, from, colour))) {
+      !is_promoting(from, colour))) {
     return 0;
   }
   if (is_enpassent(move) && ((piece(chess_state, from) & PIECE_MASK) != PAWN ||
