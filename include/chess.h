@@ -233,9 +233,6 @@ enum {
   H7 = SQUARE_FROM_RANKFILE(7, 6),
   H8 = SQUARE_FROM_RANKFILE(7, 7),
 };
-
-static const move_t null_move = {0, 0, 0};
-
 // piece lists
 // https://www.chessprogramming.org/Piece-Lists
 // uses seperate lists for light and dark squared bishops
@@ -307,7 +304,7 @@ typedef struct {
 
 } chess_state_t;
 
-
+static const move_t null_move = {0, 0, 0};
 
 // move_t interface functions
 
