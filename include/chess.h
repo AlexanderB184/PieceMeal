@@ -640,15 +640,23 @@ void make_move(chess_state_t* chess_state, move_t move);
 // restores the position to the previous state
 void unmake_move(chess_state_t* chess_state);
 
-// assumes the position is not in check.
+// assumes the resulting position is not in check.
 // returns true if the move doesn't move an absolutely pinned piece
 int is_legal(const chess_state_t* chess_state, move_t move);
 
+// assumes the resulting is not in check.
+// returns true if the move doesn't move an absolutely pinned piece
+// performs test for player 'colour'
+// this allows legality tests on moves for the opposing player
 int is_legal_internal(const chess_state_t* chess_state, move_t move,
                       colour_t colour);
+
 // checks move rules, does not check if piece is pinned, must be combined with
 // is_legal for full validation
 int is_pseudo_legal(const chess_state_t* chess_state, move_t move);
+
+int is_legal_internal(const chess_state_t* chess_state, move_t move,
+                      colour_t colour);
 
 // incremental move generation
 // all move gen is divided into 3 categories
@@ -668,12 +676,19 @@ enum generator_mode {
   GENERATE_ALL = GENERATE_QUIETS | GENERATE_CAPTURES | GENERATE_PROMOTIONS,
 };
 
+// generates psuedo legal moves, is_legal test should be performed before move is played.
 size_t generate_moves(const chess_state_t* chess_state, move_t* moves,
                       colour_t colour);
+
+// generates psuedo legal capturing moves, is_legal test should be performed before move is played.
 size_t generate_captures(const chess_state_t* chess_state, move_t* moves,
                          colour_t colour);
+                  
+// generates psuedo legal quiet moves, is_legal test should be performed before move is played.
 size_t generate_quiets(const chess_state_t* chess_state, move_t* moves,
                        colour_t colour);
+
+// generates psuedo legal promoting moves, is_legal test should be performed before move is played.
 size_t generate_promotions(const chess_state_t* chess_state, move_t* moves,
                            colour_t colour);
 
@@ -686,6 +701,18 @@ size_t generate_legal_quiets(const chess_state_t* chess_state, move_t* moves,
 size_t generate_legal_promotions(const chess_state_t* chess_state,
                                  move_t* moves, colour_t colour);
 
+size_t generate_moves_internal(const chess_state_t* chess_state, move_t* moves,
+                               colour_t colour,
+                               enum generator_mode generation_mode);
+
+size_t generate_moves_nocheck_internal(const chess_state_t* chess_state,
+                                       move_t* moves, colour_t colour,
+                                       enum generator_mode generation_mode);
+
+size_t generate_moves_check_internal(const chess_state_t* chess_state,
+                                     move_t* moves, colour_t colour,
+                                     enum generator_mode generation_mode);
+
 // zobrist own inverse function to incrementally update the running zobrist hash
 // of the current position
 zobrist_t zobrist_flip_turn(zobrist_t zobrist);
@@ -694,12 +721,16 @@ zobrist_t zobrist_flip_turn(zobrist_t zobrist);
 // of the current position
 zobrist_t zobrist_flip_piece(zobrist_t zobrist, piece_t piece, sq0x88_t square);
 
+// checks if the position is drawn by any of draw by repetition, draw by insufficient material, or draw by 50 move rule
 int is_draw(const chess_state_t* chess_state);
 
+// checks for 3 fold repetition
 int is_draw_by_repetition(const chess_state_t* chess_state);
 
+// checks for draw from insufficient material
 int is_draw_by_insufficient_material(const chess_state_t* chess_state);
 
+// checks for draw by 50 move rule
 int is_draw_by_50_move_rule(const chess_state_t* chess_state);
 
 // is_checkmate and is_stalemate should be avoided for non leaf nodes to avoid
@@ -757,19 +788,6 @@ void remove_piece(chess_state_t* chess_state, sq0x88_t target);
 void place_piece(chess_state_t* chess_state, sq0x88_t target, piece_t piece);
 
 void move_piece(chess_state_t* chess_state, sq0x88_t from, sq0x88_t to);
-
-int is_legal_internal(const chess_state_t* chess_state, move_t move,
-                      colour_t colour);
-
-size_t generate_moves_internal(const chess_state_t* chess_state, move_t* moves,
-                               colour_t colour,
-                               enum generator_mode generation_mode);
-size_t generate_moves_nocheck_internal(const chess_state_t* chess_state,
-                                       move_t* moves, colour_t colour,
-                                       enum generator_mode generation_mode);
-size_t generate_moves_check_internal(const chess_state_t* chess_state,
-                                     move_t* moves, colour_t colour,
-                                     enum generator_mode generation_mode);
 
 #ifdef __cplusplus
 }
