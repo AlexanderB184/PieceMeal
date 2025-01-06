@@ -18,7 +18,7 @@ int is_file(char c) { return c >= 'a' && c <= 'h'; }
 
 int is_rank(char c) { return c >= '1' && c <= '8'; }
 
-long write_square(char* buffer, size_t buffer_size, sq0x88_t square) {
+long write_square(char* buffer, long buffer_size, sq0x88_t square) {
   if (buffer_size < 3) return -1;
   if (off_the_board(square)) {
     WRITE_ERROR("square is off the board, square HEX value: \'%02x\'.\n",
@@ -29,7 +29,7 @@ long write_square(char* buffer, size_t buffer_size, sq0x88_t square) {
   buffer[2] = '\0';
   return 2;
 }
-long read_square(const char* buffer, size_t buffer_size, sq0x88_t* square) {
+long read_square(const char* buffer, long buffer_size, sq0x88_t* square) {
   if (buffer_size < 2) return -1;
   int file = buffer[0];
   int rank = buffer[1];
@@ -43,7 +43,7 @@ long read_square(const char* buffer, size_t buffer_size, sq0x88_t* square) {
   return 2;
 }
 
-long write_piece(char* buffer, size_t buffer_size, piece_t piece) {
+long write_piece(char* buffer, long buffer_size, piece_t piece) {
   if (buffer_size < 2) return -1;
   char piece_char;
   switch (piece & PIECE_MASK) {
@@ -73,7 +73,7 @@ long write_piece(char* buffer, size_t buffer_size, piece_t piece) {
   return 1;
 }
 
-long read_piece(const char* buffer, size_t buffer_size, piece_t* piece) {
+long read_piece(const char* buffer, long buffer_size, piece_t* piece) {
   *piece = EMPTY;
   if (buffer_size < 1) return -1;
   char piece_char = buffer[0];
@@ -140,7 +140,7 @@ void disambiguate_knight(chess_state_t* chess_state, sq0x88_t from, sq0x88_t to,
   }
 }
 
-long write_algebraic_notation(char* buffer, size_t buffer_size,
+long write_algebraic_notation(char* buffer, long buffer_size,
                               chess_state_t* chess_state,
                               move_t move_to_write) {
   // castling
@@ -297,7 +297,7 @@ int matches_disambiguation(sq0x88_t square, int rank, int file) {
          (file == -1 || sq0x88_to_file07(square) == file);
 }
 
-long read_algebraic_notation(const char* buffer, size_t buffer_size,
+long read_algebraic_notation(const char* buffer, long buffer_size,
                              const chess_state_t* chess_state,
                              move_t* read_move) {
   if (buffer_size == 0) {
@@ -589,7 +589,7 @@ long read_algebraic_notation(const char* buffer, size_t buffer_size,
   return bytes_read;
 }
 
-long write_long_algebraic_notation(char* buffer, size_t buffer_size,
+long write_long_algebraic_notation(char* buffer, long buffer_size,
                                    move_t move) {
   long bytes_read = 0, out;
 
@@ -634,7 +634,7 @@ long write_long_algebraic_notation(char* buffer, size_t buffer_size,
 }
 
 // @todo add validation
-long read_long_algebraic_notation(const char* buffer, size_t buffer_size,
+long read_long_algebraic_notation(const char* buffer, long buffer_size,
                                   const chess_state_t* chess_state,
                                   move_t* read_move) {
   long bytes_read = 0, out;
@@ -706,7 +706,7 @@ long read_long_algebraic_notation(const char* buffer, size_t buffer_size,
   return bytes_read;
 }
 
-long write_movetext_debug(char* buffer, size_t buffer_size,
+long write_movetext_debug(char* buffer, long buffer_size,
                           const chess_state_t* chess_state) {
   long bytes_written = 0, out;
   for (int i = 0; i < chess_state->ply_counter; i++) {
@@ -722,11 +722,11 @@ long write_movetext_debug(char* buffer, size_t buffer_size,
   return bytes_written;
 }
 
-long write_movetext(char* buffer, size_t buffer_size,
+long write_movetext(char* buffer, long buffer_size,
                     const chess_state_t* chess_state,
                     const char* start_position) {
   long bytes_written = 0, out;
-  chess_state_t state = {};
+  chess_state_t state = {0};
   if (start_position == NULL) {
     load_start_position(&state);
   } else {
@@ -748,7 +748,7 @@ long write_movetext(char* buffer, size_t buffer_size,
   return bytes_written;
 }
 
-long write_pgn(char* buffer, size_t buffer_size,
+long write_pgn(char* buffer, long buffer_size,
                const chess_state_t* chess_state, const char* event,
                const char* site, const char* date, const char* round,
                const char* white_name, const char* black_name,

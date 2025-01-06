@@ -120,10 +120,10 @@ typedef enum {
 } piece_encoding_t;
 
 typedef enum {
-  WHITE_QUEEN_SIDE = 0b1000,
-  WHITE_KING_SIDE = 0b0100,
-  BLACK_QUEEN_SIDE = 0b0010,
-  BLACK_KING_SIDE = 0b0001,
+  WHITE_QUEEN_SIDE = 0x8,
+  WHITE_KING_SIDE = 0x4,
+  BLACK_QUEEN_SIDE = 0x2,
+  BLACK_KING_SIDE = 0x1,
   WHITE_BOTH_SIDES = WHITE_QUEEN_SIDE | WHITE_KING_SIDE,
   BLACK_BOTH_SIDES = BLACK_QUEEN_SIDE | BLACK_KING_SIDE,
   ALL_RIGHTS = WHITE_BOTH_SIDES | BLACK_BOTH_SIDES,
@@ -337,7 +337,7 @@ static inline int is_promotion(move_t move) {
 }
 
 static inline piece_t get_promotes_to(move_t move) {
-  switch (get_flags(move) & 0b11) {
+  switch (get_flags(move) & 3) {
     case KNIGHT_PROMOTE_TO:
       return KNIGHT;
     case BISHOP_PROMOTE_TO:
@@ -557,39 +557,39 @@ int can_castle_queen_side(const chess_state_t* chess_state, colour_t colour);
 long skip_whitespace(const char* buffer);
 
 // writes a square in format file rank, e.g. a1, h4, c8
-long write_square(char* buffer, size_t buffer_size, sq0x88_t square);
+long write_square(char* buffer, long buffer_size, sq0x88_t square);
 
 // reads a square in format file rank, e.g. a1, h4, c8
-long read_square(const char* buffer, size_t buffer_size, sq0x88_t* square);
+long read_square(const char* buffer, long buffer_size, sq0x88_t* square);
 
 // writes the letter code for a piece, e.g. P, K, N
-long write_piece(char* buffer, size_t buffer_size, piece_t piece);
+long write_piece(char* buffer, long buffer_size, piece_t piece);
 
 // reads the letter code for a piece, e.g. P, K, N
-long read_piece(const char* buffer, size_t buffer_size, piece_t* piece);
+long read_piece(const char* buffer, long buffer_size, piece_t* piece);
 
 // write to buffer in algebraic notation
 // e.g. e8=Q or Nb3
-long write_algebraic_notation(char* buffer, size_t buffer_size,
+long write_algebraic_notation(char* buffer, long buffer_size,
                               chess_state_t* chess_state, move_t move);
 
 // read from buffer a move in algebraic notation
 // e.g. e8=Q or Nb3
-long read_algebraic_notation(const char* buffer, size_t buffer_size,
+long read_algebraic_notation(const char* buffer, long buffer_size,
                              const chess_state_t* chess_state, move_t* move);
 
 // write to buffer in long algebraic notation
 // e.g. e7e8Q or e1b3
-long write_long_algebraic_notation(char* buffer, size_t buffer_size,
+long write_long_algebraic_notation(char* buffer, long buffer_size,
                                    move_t move);
 // read from buffer a move in long algebraic notation
 // e.g. e7e8Q or e1b3
-long read_long_algebraic_notation(const char* buffer, size_t buffer_size,
+long read_long_algebraic_notation(const char* buffer, long buffer_size,
                                   const chess_state_t* chess_state,
                                   move_t* move);
 
 // writes a sequence of space seperated moves in algebraic notation.
-long write_movetext(char* buffer, size_t buffer_size,
+long write_movetext(char* buffer, long buffer_size,
                     const chess_state_t* chess_state,
                     const char* start_position);
 
@@ -598,13 +598,13 @@ long write_movetext(char* buffer, size_t buffer_size,
 // so instead use this version. Since write_long_algebraic_notation does not
 // depend on the chess_state, all moves can be written out in a traversal
 // without cloning the game and making moves.
-long write_movetext_debug(char* buffer, size_t buffer_size,
+long write_movetext_debug(char* buffer, long buffer_size,
                           const chess_state_t* chess_state);
 
 // writes the pgn out to a buffer
 // event, site, date, round, names, and fen are all optional parameters, if set
 // to NULL they will be left empty in pgn.
-long write_pgn(char* buffer, size_t buffer_size,
+long write_pgn(char* buffer, long buffer_size,
                const chess_state_t* chess_state, const char* event,
                const char* site, const char* date, const char* round,
                const char* white_name, const char* black_name, const char* fen);

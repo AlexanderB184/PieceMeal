@@ -3,7 +3,7 @@ from os import path, listdir, system
 
 if platform == "linux" or platform == "linux2":
     COMPILER = "gcc"
-    DEFAULT_FLAGS = ["-Wall", "-Werror", "-O3"]
+    DEFAULT_FLAGS = ["-Wall", "-Wpedantic", "-Wextra", "-Werror", "-O3"]
     SHARED_LIBRARY_FLAGS = ["-fPIC", "-shared"]
     SHARED_LIBRARY_EXTENSION = ".so"
     NAME_FLAG = "-o"

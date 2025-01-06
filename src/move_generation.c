@@ -26,7 +26,7 @@ static const sq0x88_t rook_increments_list[ROOK_INCREMENTS_COUNT] = {1, 255,
 // piece_lists, move_t* moves); make incremental move generation functions i.
 // size_t generate_captures(const chess_state_t* chess_state, move_t * moves);
 
-#pragma region Helper Functions
+
 
 
 
@@ -62,11 +62,11 @@ int can_castle_queen_side(const chess_state_t* chess_state, colour_t colour) {
          piece(chess_state, king_square - 3) == EMPTY;
 }
 
-#pragma endregion
 
-#pragma region Piece Specific Move Generators
 
-#pragma region Knight Moves
+
+
+
 
 // knight movement
 
@@ -88,9 +88,9 @@ size_t knight_moves(const chess_state_t* chess_state, move_t* moves,
   return move_count;
 }
 
-#pragma endregion
 
-#pragma region King Moves
+
+
 
 size_t king_moves(const chess_state_t* chess_state, move_t* moves,
                   size_t move_count, sq0x88_t king_square, colour_t colour,
@@ -127,9 +127,9 @@ size_t castling_moves(const chess_state_t* chess_state, move_t* moves,
   return move_count;
 }
 
-#pragma endregion
 
-#pragma region Pawn Moves
+
+
 
 // flags should either be QUIET_MOVE or CAPTURE, add_promotion_moves will handle
 // the promotion flags
@@ -197,9 +197,9 @@ size_t pawn_moves(const chess_state_t* chess_state, move_t* moves,
   return move_count;
 }
 
-#pragma endregion
 
-#pragma region Sliding Moves
+
+
 
 size_t sliding_moves(const chess_state_t* chess_state, move_t* moves,
                      size_t move_count, sq0x88_t from, colour_t colour,
@@ -227,6 +227,7 @@ size_t sliding_moves(const chess_state_t* chess_state, move_t* moves,
 size_t sliding_quiets(const chess_state_t* chess_state, move_t* moves,
                      size_t move_count, sq0x88_t from, colour_t colour,
                      const sq0x88_t* increments, int increments_count) {
+  (void)colour;
   for (sq0x88_t i = 0; i < increments_count; i++) {
     sq0x88_t inc = increments[i];
     sq0x88_t to;
@@ -252,11 +253,11 @@ size_t sliding_captures(const chess_state_t* chess_state, move_t* moves,
   return move_count;
 }
 
-#pragma endregion
 
-#pragma endregion
 
-#pragma region Coloured Move Generators Non Checked
+
+
+
 
 #define FOR_ALL_PIECES(MOVE_TYPE)                                              \
   do {                                                                         \
@@ -347,11 +348,11 @@ size_t generate_moves_nocheck_internal(const chess_state_t* chess_state,
   return move_count;
 }
 
-#pragma endregion
 
-#pragma region Coloured Move Generators Checked
 
-#pragma region Helper Functions
+
+
+
 int sliding_can_reach(const chess_state_t* chess_state, sq0x88_t from,
                       sq0x88_t target, sq0x88_t inc) {
   return inc && backwards_ray_cast(chess_state, target, inc) == from;
@@ -545,7 +546,7 @@ size_t generate_interposing_moves(const chess_state_t* chess_state,
   return move_count;
 }
 
-#pragma endregion
+
 
 size_t generate_moves_check_internal(const chess_state_t* chess_state,
                                      move_t* moves, colour_t colour,
@@ -586,9 +587,9 @@ size_t generate_moves_check_internal(const chess_state_t* chess_state,
   return move_count;
 }
 
-#pragma endregion
 
-#pragma region Pseudo Legal Move Generators
+
+
 
 size_t generate_moves_internal(const chess_state_t* chess_state, move_t* moves,
                                colour_t colour,
@@ -624,9 +625,9 @@ size_t generate_promotions(const chess_state_t* chess_state, move_t* moves,
                                  GENERATE_PROMOTIONS);
 }
 
-#pragma endregion
 
-#pragma region Fully Legal Move Generators
+
+
 
 size_t remove_illegal_moves(const chess_state_t* chess_state, move_t* moves,
                             size_t move_count) {
@@ -662,4 +663,3 @@ size_t generate_legal_promotions(const chess_state_t* chess_state,
                               generate_promotions(chess_state, moves, colour));
 }
 
-#pragma endregion

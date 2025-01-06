@@ -174,6 +174,7 @@ int is_pseudo_legal_king_move(const chess_state_t* chess_state, move_t move, col
 }
 
 int is_pseudo_legal_knight_move(const chess_state_t* chess_state, move_t move) {
+  (void)chess_state;
   return knight_increment(get_from(move), get_to(move)) != 0;
 }
 
