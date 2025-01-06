@@ -1,7 +1,6 @@
 #include <stdio.h>
 
-#include "../include/chess-lib.h"
-#include "../include/private/chess-lib-internals.h"
+#include "../include/chess.h"
 
 int is_draw_by_repetition(const chess_state_t* chess_state) {
   if (chess_state->ply_counter - chess_state->ply_of_last_irreversible_move <

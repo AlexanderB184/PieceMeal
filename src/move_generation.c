@@ -1,8 +1,20 @@
 
 #include <stdlib.h>
 
-#include "../include/chess-lib.h"
-#include "../include/private/chess-lib-internals.h"
+#include "../include/chess.h"
+
+#define KING_INCREMENTS_COUNT 8
+#define QUEEN_INCREMENTS_COUNT 8
+#define KNIGHT_INCREMENTS_COUNT 8
+#define BISHOP_INCREMENTS_COUNT 4
+#define ROOK_INCREMENTS_COUNT 4
+
+static const sq0x88_t king_increments_list[KING_INCREMENTS_COUNT] = {1, 255, 240, 16, 241, 239, 15, 17};
+static const sq0x88_t knight_increments_list[KNIGHT_INCREMENTS_COUNT] = {18, 14, 33, 31, 242, 238, 225, 223};
+static const sq0x88_t queen_increments_list[QUEEN_INCREMENTS_COUNT] = {1, 255, 240, 16, 241, 239, 15, 17};
+static const sq0x88_t bishop_increments_list[BISHOP_INCREMENTS_COUNT] = {241, 239, 15, 17};
+static const sq0x88_t rook_increments_list[ROOK_INCREMENTS_COUNT] = {1, 255, 240, 16};
+
 
 // todo
 // make piece list base move generation functions i.e. size_t
@@ -33,7 +45,7 @@ colour_t opposite_colour(colour_t colour) {
 }
 
 sq0x88_t pawn_push_increment(colour_t colour) {
-  return (colour & WHITE) ? (sq0x88_t)(a2 - a1) : (sq0x88_t)(a1 - a2);
+  return (colour & WHITE) ? (sq0x88_t)(A2 - A1) : (sq0x88_t)(A1 - A2);
 }
 
 const piece_list_t* get_piece_list(const chess_state_t* chess_state,

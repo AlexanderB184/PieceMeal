@@ -1,8 +1,7 @@
 
 #include <stdio.h>
 
-#include "../include/chess-lib.h"
-#include "../include/private/chess-lib-internals.h"
+#include "../include/chess.h"
 
 
 void update_discover_check(chess_state_t* chess_state, sq0x88_t king_square,

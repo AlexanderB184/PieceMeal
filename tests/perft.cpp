@@ -4,8 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../include/chess-lib.h"
-#include "../include/private/chess-lib-internals.h"
+#include "../include/chess.h"
 
 //using namespace chess;
 

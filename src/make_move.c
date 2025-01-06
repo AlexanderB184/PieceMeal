@@ -3,8 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/chess-lib.h"
-#include "../include/private/chess-lib-internals.h"
+#include "../include/chess.h"
 
 void push_ply_stack(chess_state_t* chess_state, move_t move) {
   if (chess_state->ply_counter >= chess_state->ply_stack_capacity) {
@@ -57,22 +56,22 @@ void update_rights(chess_state_t* chess_state, move_t move) {
   sq0x88_t from = get_from(move);
   sq0x88_t to = get_to(move);
   // castle rights
-  if (from == a1 || to == a1) {
+  if (from == A1 || to == A1) {
     chess_state->castle_rights &= ~WHITE_QUEEN_SIDE;
   }
-  if (from == h1 || to == h1) {
+  if (from == H1 || to == H1) {
     chess_state->castle_rights &= ~WHITE_KING_SIDE;
   }
-  if (from == a8 || to == a8) {
+  if (from == A8 || to == A8) {
     chess_state->castle_rights &= ~BLACK_QUEEN_SIDE;
   }
-  if (from == h8 || to == h8) {
+  if (from == H8 || to == H8) {
     chess_state->castle_rights &= ~BLACK_KING_SIDE;
   }
-  if (from == e1) {
+  if (from == E1) {
     chess_state->castle_rights &= ~WHITE_BOTH_SIDES;
   }
-  if (from == e8) {
+  if (from == E8) {
     chess_state->castle_rights &= ~BLACK_BOTH_SIDES;
   }
 }

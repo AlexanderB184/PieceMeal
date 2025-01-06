@@ -3,26 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "../include/chess-lib.h"
-#include "../include/private/chess-lib-internals.h"
-#include "../include/notation.h"
-
-#ifdef DEBUG
-#define PRINT_READ_ERRORS
-#define PRINT_WRITE_ERRORS
-#endif
-
-#ifdef PRINT_READ_ERRORS
-#define READ_ERROR(msg, args...) {fprintf(stderr,"READ ERROR: reading \"%s\" ", buffer);fprintf(stderr, msg, ##args); return -1;}
-#else
-#define READ_ERROR(msg, args...) {return -1;}
-#endif
-
-#ifdef PRINT_WRITE_ERRORS
-#define WRITE_ERROR(msg, args...) {fprintf(stderr,"WRITE ERROR: ");printf(msg, ##args); buffer[0] = 0; return -1;}
-#else
-#define WRITE_ERROR(msg, args...) {buffer[0] = 0; return -1;}
-#endif
+#include "../include/chess.h"
 
 long skip_whitespace(const char* buffer) {
   long bytes_read = 0;

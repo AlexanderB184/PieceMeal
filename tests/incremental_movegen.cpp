@@ -3,7 +3,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "../include/chess-lib.h"
+#include "../include/chess.h"
 
 int check_duplicates(move_t* moves, size_t move_count) {
   for (size_t i = 0; i < move_count; i++) {

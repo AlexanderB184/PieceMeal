@@ -2,8 +2,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "../include/chess-lib.h"
-#include "../include/private/chess-lib-internals.h"
+#include "../include/chess.h"
 
 #define pl_remove(list, count, indices, index) \
   (list)[index] = (list)[--(count)];           \

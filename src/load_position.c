@@ -3,9 +3,26 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/chess-lib.h"
-#include "../include/notation.h"
-#include "../include/private/chess-lib-internals.h"
+#include "../include/chess.h"
+
+static const piece_t empty_board[RANK_SIZE * FILE_SIZE] = {
+EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , EMPTY       , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , BORDER      , 
+};
 
 void release_position(chess_state_t* chess_state) {
   if (chess_state->ply_stack) {
@@ -70,19 +87,6 @@ piece_t parse_piece(char letter) {
   }
 }
 
-
-
-#ifdef PRINT_READ_ERRORS
-#define READ_ERROR(msg, args...) {printf("READ ERROR: reading \"%s\" ", buffer);printf(msg, ##args); return -1;}
-#else
-#define READ_ERROR(msg, args...) {return -1;}
-#endif
-
-#ifdef PRINT_WRITE_ERRORS
-#define WRITE_ERROR(msg, args...) {printf("WRITE ERROR: ");printf(msg, ##args); buffer[0] = 0; return -1;}
-#else
-#define WRITE_ERROR(msg, args...) {buffer[0] = 0; return -1;}
-#endif
 
 long load_position(chess_state_t* chess_state, const char* buffer) {
   long bytes_read = 0;

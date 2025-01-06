@@ -1,14 +1,7 @@
-#include "../include/chess-lib.h"
+#include "../include/chess.h"
 
-#define MINSCORE (-INT16_MAX)
-#define MAXSCORE (INT16_MAX)
 
-#define PAWN_SCORE 100
-#define KNIGHT_SCORE 320
-#define BISHOP_SCORE 330
-#define ROOK_SCORE 500
-#define QUEEN_SCORE 900
-#define CHECKMATE_SCORE (-16000)
+
 
 int eval(const chess_state_t* chess_state) {
   if (is_draw(chess_state)) {
