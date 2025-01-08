@@ -517,6 +517,18 @@ static inline int pawn_can_double_push(sq0x88_t from,
          (sq0x88_to_rank07(from) == 1 && colour == WHITE);
 }
 
+static inline centipawn_t value_of(piece_t piece) {
+  switch(piece & PIECE_MASK) {
+    case PAWN: return PAWN_SCORE;
+    case KNIGHT: return KNIGHT_SCORE;
+    case BISHOP: return BISHOP_SCORE;
+    case ROOK: return ROOK_SCORE;
+    case QUEEN: return QUEEN_SCORE;
+    case KING: return KING_SCORE;
+    default: return 0;
+  }
+}
+
 sq0x88_t queen_increment(sq0x88_t from, sq0x88_t to);
 
 sq0x88_t rook_increment(sq0x88_t from, sq0x88_t to);
