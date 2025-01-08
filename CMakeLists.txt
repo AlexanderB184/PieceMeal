@@ -8,15 +8,6 @@ add_library(chess SHARED src/game-over.c src/increment-vectors.c src/load_positi
 add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 add_compile_options(-O3)
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    
-    #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage")
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
-    #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    add_compile_options(/W4 /WX /O2)
-endif()
-
 enable_testing()
 
 include(FetchContent)
