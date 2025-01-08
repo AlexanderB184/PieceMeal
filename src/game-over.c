@@ -60,13 +60,88 @@ int is_checkmate(const chess_state_t* chess_state) {
   return 1;
 }
 
+#define KING_INCREMENTS_COUNT 8
+#define QUEEN_INCREMENTS_COUNT 8
+#define KNIGHT_INCREMENTS_COUNT 8
+#define BISHOP_INCREMENTS_COUNT 4
+#define ROOK_INCREMENTS_COUNT 4
+
+static const sq0x88_t king_increments_list[KING_INCREMENTS_COUNT] = {
+    1, 255, 240, 16, 241, 239, 15, 17};
+static const sq0x88_t knight_increments_list[KNIGHT_INCREMENTS_COUNT] = {
+    18, 14, 33, 31, 242, 238, 225, 223};
+static const sq0x88_t queen_increments_list[QUEEN_INCREMENTS_COUNT] = {
+    1, 255, 240, 16, 241, 239, 15, 17};
+static const sq0x88_t bishop_increments_list[BISHOP_INCREMENTS_COUNT] = {
+    241, 239, 15, 17};
+static const sq0x88_t rook_increments_list[ROOK_INCREMENTS_COUNT] = {1, 255,
+                                                                     240, 16};
+
 int is_stalemate(const chess_state_t* chess_state) {
   if (is_check(chess_state)) return 0;
   move_t moves[256];
-  size_t move_count = generate_moves(chess_state, moves, chess_state->friendly_colour);
+  size_t move_count = castling_moves(chess_state, moves, 0, chess_state->friendly_pieces->king_square, chess_state->friendly_colour, GENERATE_ALL);
   for (size_t i = 0; i < move_count; i++) {
     if (is_legal(chess_state, moves[i])) {
       return 0;
+    }
+  }
+  move_count = king_moves(chess_state, moves, 0, chess_state->friendly_pieces->king_square, chess_state->friendly_colour, GENERATE_ALL);
+  for (size_t i = 0; i < move_count; i++) {
+    if (is_legal(chess_state, moves[i])) {
+      return 0;
+    }
+  }
+  FOR_EACH_PIECE(chess_state->friendly_pieces, pawn, square) {
+    size_t move_count = pawn_moves(chess_state, moves, 0, square, chess_state->friendly_colour, GENERATE_ALL);
+    for (size_t i = 0; i < move_count; i++) {
+      if (is_legal(chess_state, moves[i])) {
+        return 0;
+      }
+    }
+  }
+
+  FOR_EACH_PIECE(chess_state->friendly_pieces, knight, square) {
+    size_t move_count = knight_moves(chess_state, moves, 0, square, chess_state->friendly_colour, GENERATE_ALL);
+    for (size_t i = 0; i < move_count; i++) {
+      if (is_legal(chess_state, moves[i])) {
+        return 0;
+      }
+    }
+  }
+
+  FOR_EACH_PIECE(chess_state->friendly_pieces, light_bishop, square) {
+    size_t move_count = sliding_moves(chess_state, moves, 0, square, chess_state->friendly_colour, GENERATE_ALL, bishop_increments_list, BISHOP_INCREMENTS_COUNT);
+    for (size_t i = 0; i < move_count; i++) {
+      if (is_legal(chess_state, moves[i])) {
+        return 0;
+      }
+    }
+  }
+
+  FOR_EACH_PIECE(chess_state->friendly_pieces, dark_bishop, square) {
+    size_t move_count = sliding_moves(chess_state, moves, 0, square, chess_state->friendly_colour, GENERATE_ALL, bishop_increments_list, BISHOP_INCREMENTS_COUNT);
+    for (size_t i = 0; i < move_count; i++) {
+      if (is_legal(chess_state, moves[i])) {
+        return 0;
+      }
+    }
+  }
+
+  FOR_EACH_PIECE(chess_state->friendly_pieces, rook, square) {
+    size_t move_count = sliding_moves(chess_state, moves, 0, square, chess_state->friendly_colour, GENERATE_ALL, rook_increments_list, ROOK_INCREMENTS_COUNT);
+    for (size_t i = 0; i < move_count; i++) {
+      if (is_legal(chess_state, moves[i])) {
+        return 0;
+      }
+    }
+  }
+  FOR_EACH_PIECE(chess_state->friendly_pieces, queen, square) {
+    size_t move_count = sliding_moves(chess_state, moves, 0, square, chess_state->friendly_colour, GENERATE_ALL, queen_increments_list, QUEEN_INCREMENTS_COUNT);
+    for (size_t i = 0; i < move_count; i++) {
+      if (is_legal(chess_state, moves[i])) {
+        return 0;
+      }
     }
   }
   return 1;

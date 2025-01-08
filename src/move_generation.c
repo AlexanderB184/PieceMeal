@@ -253,12 +253,6 @@ size_t sliding_captures(const chess_state_t* chess_state, move_t* moves,
   return move_count;
 }
 
-
-
-
-
-
-
 #define FOR_ALL_PIECES(MOVE_TYPE)                                              \
   do {                                                                         \
     move_count = king_##MOVE_TYPE(chess_state, moves, move_count,              \

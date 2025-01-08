@@ -796,6 +796,41 @@ void place_piece(chess_state_t* chess_state, sq0x88_t target, piece_t piece);
 
 void move_piece(chess_state_t* chess_state, sq0x88_t from, sq0x88_t to);
 
+
+size_t knight_moves(const chess_state_t* chess_state, move_t* moves,
+                    size_t move_count, sq0x88_t from, colour_t colour,
+                    enum generator_mode generation_mode);
+
+size_t king_moves(const chess_state_t* chess_state, move_t* moves,
+                  size_t move_count, sq0x88_t king_square, colour_t colour,
+                  enum generator_mode generation_mode);
+
+size_t castling_moves(const chess_state_t* chess_state, move_t* moves,
+                      size_t move_count, sq0x88_t king_square, colour_t colour,
+                      enum generator_mode generation_mode);
+
+// flags should either be QUIET_MOVE or CAPTURE, add_promotion_moves will handle
+// the promotion flags
+size_t add_promotion_moves(move_t* moves, size_t move_count, sq0x88_t from,
+                           sq0x88_t to, int flags);
+
+size_t pawn_moves(const chess_state_t* chess_state, move_t* moves,
+                  size_t move_count, sq0x88_t from, colour_t colour,
+                  enum generator_mode generation_mode);
+
+size_t sliding_moves(const chess_state_t* chess_state, move_t* moves,
+                     size_t move_count, sq0x88_t from, colour_t colour,
+                     enum generator_mode generation_mode,
+                     const sq0x88_t* increments, int increments_count);
+
+size_t sliding_quiets(const chess_state_t* chess_state, move_t* moves,
+                     size_t move_count, sq0x88_t from, colour_t colour,
+                     const sq0x88_t* increments, int increments_count);
+
+size_t sliding_captures(const chess_state_t* chess_state, move_t* moves,
+                     size_t move_count, sq0x88_t from, colour_t colour,
+                     const sq0x88_t* increments, int increments_count);
+
 #ifdef __cplusplus
 }
 #endif
