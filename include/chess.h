@@ -14,7 +14,6 @@ extern "C" {
 #define TOP_BORDER 0
 #define MOVE_PRIORITY_MAX 0xFFF
 
-
 #define MAXSCORE ((centipawn_t)(INT16_MAX))
 #define MINSCORE ((centipawn_t)(-INT16_MAX))
 
@@ -23,7 +22,9 @@ extern "C" {
 #define BISHOP_SCORE ((centipawn_t)(330))
 #define ROOK_SCORE ((centipawn_t)(500))
 #define QUEEN_SCORE ((centipawn_t)(900))
-#define KING_SCORE ((centipawn_t)(KNIGHT_SCORE*2+BISHOP_SCORE*2+ROOK_SCORE*2+QUEEN_SCORE*9))
+#define KING_SCORE                                                      \
+  ((centipawn_t)(KNIGHT_SCORE * 2 + BISHOP_SCORE * 2 + ROOK_SCORE * 2 + \
+                 QUEEN_SCORE * 9))
 #define CHECKMATE_SCORE ((centipawn_t)(-16000))
 #define DRAW_SCORE ((centipawn_t)(0))
 
@@ -41,15 +42,31 @@ extern "C" {
 #endif
 
 #ifdef PRINT_READ_ERRORS
-#define READ_ERROR(msg, ...) {fprintf(stderr,"READ ERROR: reading \"%s\" ", buffer);fprintf(stderr, msg, ##__VA_ARGS__); return -1;}
+#define READ_ERROR(msg, ...)                                \
+  {                                                         \
+    fprintf(stderr, "READ ERROR: reading \"%s\" ", buffer); \
+    fprintf(stderr, msg, ##__VA_ARGS__);                    \
+    return -1;                                              \
+  }
 #else
-#define READ_ERROR(msg, ...) {return -1;}
+#define READ_ERROR(msg, ...) \
+  { return -1; }
 #endif
 
 #ifdef PRINT_WRITE_ERRORS
-#define WRITE_ERROR(msg, ...) {fprintf(stderr,"WRITE ERROR: ");printf(msg, ##__VA_ARGS__); buffer[0] = 0; return -1;}
+#define WRITE_ERROR(msg, ...)         \
+  {                                   \
+    fprintf(stderr, "WRITE ERROR: "); \
+    printf(msg, ##__VA_ARGS__);       \
+    buffer[0] = 0;                    \
+    return -1;                        \
+  }
 #else
-#define WRITE_ERROR(msg, ...) {buffer[0] = 0; return -1;}
+#define WRITE_ERROR(msg, ...) \
+  {                           \
+    buffer[0] = 0;            \
+    return -1;                \
+  }
 #endif
 
 // coordinates stored in 0x88 format
@@ -421,6 +438,17 @@ static inline uint8_t off_the_board(sq0x88_t sq0x88) {
   return sq0x88 & (uint8_t)0x88;
 }
 
+static inline rank07_t backrank(colour_t colour) {
+  switch (colour & COLOUR_MASK) {
+    case WHITE:
+      return 7;
+    case BLACK:
+      return 0;
+    default:
+      return 0;
+  }
+}
+
 // coordinate conversion funcitons
 
 static inline sq8x8_t sq0x88_to_sq8x8(sq0x88_t sq0x88) {
@@ -475,12 +503,13 @@ static inline move_t uncompress_move(compact_move_t compact_move) {
               compact_move >> 12);
 }
 
-static inline colour_t piece_colour(const chess_state_t* chess_state, sq0x88_t square) {
+static inline colour_t piece_colour(const chess_state_t* chess_state,
+                                    sq0x88_t square) {
   return (piece(chess_state, square) & COLOUR_MASK);
 }
 
-static inline int piece_is_colour(const chess_state_t* chess_state, sq0x88_t square,
-                    colour_t colour) {
+static inline int piece_is_colour(const chess_state_t* chess_state,
+                                  sq0x88_t square, colour_t colour) {
   return piece_colour(chess_state, square) == colour;
 }
 
@@ -499,33 +528,38 @@ static inline sq0x88_t pawn_push_increment(colour_t colour) {
   return (colour & WHITE) ? (sq0x88_t)(A2 - A1) : (sq0x88_t)(A1 - A2);
 }
 
-static inline const piece_list_t* get_piece_list(const chess_state_t* chess_state,
-                                   colour_t colour) {
+static inline const piece_list_t* get_piece_list(
+    const chess_state_t* chess_state, colour_t colour) {
   return (colour & WHITE) ? &chess_state->white_pieces
                           : &chess_state->black_pieces;
 }
 
-static inline int is_promoting(sq0x88_t from,
-                 colour_t colour) {
+static inline int is_promoting(sq0x88_t from, colour_t colour) {
   return (sq0x88_to_rank07(from) == 1 && colour == BLACK) ||
          (sq0x88_to_rank07(from) == 6 && colour == WHITE);
 }
 
-static inline int pawn_can_double_push(sq0x88_t from,
-                         colour_t colour) {
+static inline int pawn_can_double_push(sq0x88_t from, colour_t colour) {
   return (sq0x88_to_rank07(from) == 6 && colour == BLACK) ||
          (sq0x88_to_rank07(from) == 1 && colour == WHITE);
 }
 
 static inline centipawn_t value_of(piece_t piece) {
-  switch(piece & PIECE_MASK) {
-    case PAWN: return PAWN_SCORE;
-    case KNIGHT: return KNIGHT_SCORE;
-    case BISHOP: return BISHOP_SCORE;
-    case ROOK: return ROOK_SCORE;
-    case QUEEN: return QUEEN_SCORE;
-    case KING: return KING_SCORE;
-    default: return 0;
+  switch (piece & PIECE_MASK) {
+    case PAWN:
+      return PAWN_SCORE;
+    case KNIGHT:
+      return KNIGHT_SCORE;
+    case BISHOP:
+      return BISHOP_SCORE;
+    case ROOK:
+      return ROOK_SCORE;
+    case QUEEN:
+      return QUEEN_SCORE;
+    case KING:
+      return KING_SCORE;
+    default:
+      return 0;
   }
 }
 
@@ -540,7 +574,8 @@ sq0x88_t knight_increment(sq0x88_t from, sq0x88_t to);
 sq0x88_t king_increment(sq0x88_t from, sq0x88_t to);
 
 // returns true if the players piece at square can be pseudo captured
-int is_under_attack(const chess_state_t* chess_state, sq0x88_t square, piece_t player);
+int is_under_attack(const chess_state_t* chess_state, sq0x88_t square,
+                    piece_t player);
 
 // returns true if there is atleast one piece threatening the king
 int is_check(const chess_state_t* chess_state);
@@ -592,8 +627,7 @@ long read_algebraic_notation(const char* buffer, long buffer_size,
 
 // write to buffer in long algebraic notation
 // e.g. e7e8Q or e1b3
-long write_long_algebraic_notation(char* buffer, long buffer_size,
-                                   move_t move);
+long write_long_algebraic_notation(char* buffer, long buffer_size, move_t move);
 // read from buffer a move in long algebraic notation
 // e.g. e7e8Q or e1b3
 long read_long_algebraic_notation(const char* buffer, long buffer_size,
@@ -616,10 +650,10 @@ long write_movetext_debug(char* buffer, long buffer_size,
 // writes the pgn out to a buffer
 // event, site, date, round, names, and fen are all optional parameters, if set
 // to NULL they will be left empty in pgn.
-long write_pgn(char* buffer, long buffer_size,
-               const chess_state_t* chess_state, const char* event,
-               const char* site, const char* date, const char* round,
-               const char* white_name, const char* black_name, const char* fen);
+long write_pgn(char* buffer, long buffer_size, const chess_state_t* chess_state,
+               const char* event, const char* site, const char* date,
+               const char* round, const char* white_name,
+               const char* black_name, const char* fen);
 
 // loads default chess starting position
 void load_start_position(chess_state_t* chess_state);
@@ -683,19 +717,23 @@ enum generator_mode {
   GENERATE_ALL = GENERATE_QUIETS | GENERATE_CAPTURES | GENERATE_PROMOTIONS,
 };
 
-// generates psuedo legal moves, is_legal test should be performed before move is played.
+// generates psuedo legal moves, is_legal test should be performed before move
+// is played.
 size_t generate_moves(const chess_state_t* chess_state, move_t* moves,
                       colour_t colour);
 
-// generates psuedo legal capturing moves, is_legal test should be performed before move is played.
+// generates psuedo legal capturing moves, is_legal test should be performed
+// before move is played.
 size_t generate_captures(const chess_state_t* chess_state, move_t* moves,
                          colour_t colour);
-                  
-// generates psuedo legal quiet moves, is_legal test should be performed before move is played.
+
+// generates psuedo legal quiet moves, is_legal test should be performed before
+// move is played.
 size_t generate_quiets(const chess_state_t* chess_state, move_t* moves,
                        colour_t colour);
 
-// generates psuedo legal promoting moves, is_legal test should be performed before move is played.
+// generates psuedo legal promoting moves, is_legal test should be performed
+// before move is played.
 size_t generate_promotions(const chess_state_t* chess_state, move_t* moves,
                            colour_t colour);
 
@@ -708,17 +746,12 @@ size_t generate_legal_quiets(const chess_state_t* chess_state, move_t* moves,
 size_t generate_legal_promotions(const chess_state_t* chess_state,
                                  move_t* moves, colour_t colour);
 
-size_t generate_moves_internal(const chess_state_t* chess_state, move_t* moves,
-                               colour_t colour,
-                               enum generator_mode generation_mode);
 
 size_t generate_moves_nocheck_internal(const chess_state_t* chess_state,
-                                       move_t* moves, colour_t colour,
-                                       enum generator_mode generation_mode);
+                                       move_t* moves, colour_t colour);
 
 size_t generate_moves_check_internal(const chess_state_t* chess_state,
-                                     move_t* moves, colour_t colour,
-                                     enum generator_mode generation_mode);
+                                     move_t* moves, colour_t colour);
 
 // zobrist own inverse function to incrementally update the running zobrist hash
 // of the current position
@@ -728,7 +761,8 @@ zobrist_t zobrist_flip_turn(zobrist_t zobrist);
 // of the current position
 zobrist_t zobrist_flip_piece(zobrist_t zobrist, piece_t piece, sq0x88_t square);
 
-// checks if the position is drawn by any of draw by repetition, draw by insufficient material, or draw by 50 move rule
+// checks if the position is drawn by any of draw by repetition, draw by
+// insufficient material, or draw by 50 move rule
 int is_draw(const chess_state_t* chess_state);
 
 // checks for 3 fold repetition
@@ -796,18 +830,14 @@ void place_piece(chess_state_t* chess_state, sq0x88_t target, piece_t piece);
 
 void move_piece(chess_state_t* chess_state, sq0x88_t from, sq0x88_t to);
 
-
 size_t knight_moves(const chess_state_t* chess_state, move_t* moves,
-                    size_t move_count, sq0x88_t from, colour_t colour,
-                    enum generator_mode generation_mode);
+                    size_t move_count, sq0x88_t from, colour_t colour);
 
 size_t king_moves(const chess_state_t* chess_state, move_t* moves,
-                  size_t move_count, sq0x88_t king_square, colour_t colour,
-                  enum generator_mode generation_mode);
+                  size_t move_count, sq0x88_t king_square, colour_t colour);
 
 size_t castling_moves(const chess_state_t* chess_state, move_t* moves,
-                      size_t move_count, sq0x88_t king_square, colour_t colour,
-                      enum generator_mode generation_mode);
+                      size_t move_count, sq0x88_t king_square, colour_t colour);
 
 // flags should either be QUIET_MOVE or CAPTURE, add_promotion_moves will handle
 // the promotion flags
@@ -815,21 +845,19 @@ size_t add_promotion_moves(move_t* moves, size_t move_count, sq0x88_t from,
                            sq0x88_t to, int flags);
 
 size_t pawn_moves(const chess_state_t* chess_state, move_t* moves,
-                  size_t move_count, sq0x88_t from, colour_t colour,
-                  enum generator_mode generation_mode);
+                  size_t move_count, sq0x88_t from, colour_t colour);
 
 size_t sliding_moves(const chess_state_t* chess_state, move_t* moves,
                      size_t move_count, sq0x88_t from, colour_t colour,
-                     enum generator_mode generation_mode,
                      const sq0x88_t* increments, int increments_count);
 
 size_t sliding_quiets(const chess_state_t* chess_state, move_t* moves,
-                     size_t move_count, sq0x88_t from, colour_t colour,
-                     const sq0x88_t* increments, int increments_count);
+                      size_t move_count, sq0x88_t from, colour_t colour,
+                      const sq0x88_t* increments, int increments_count);
 
 size_t sliding_captures(const chess_state_t* chess_state, move_t* moves,
-                     size_t move_count, sq0x88_t from, colour_t colour,
-                     const sq0x88_t* increments, int increments_count);
+                        size_t move_count, sq0x88_t from, colour_t colour,
+                        const sq0x88_t* increments, int increments_count);
 
 #ifdef __cplusplus
 }

@@ -80,20 +80,20 @@ static const sq0x88_t rook_increments_list[ROOK_INCREMENTS_COUNT] = {1, 255,
 int is_stalemate(const chess_state_t* chess_state) {
   if (is_check(chess_state)) return 0;
   move_t moves[256];
-  size_t move_count = castling_moves(chess_state, moves, 0, chess_state->friendly_pieces->king_square, chess_state->friendly_colour, GENERATE_ALL);
+  size_t move_count = castling_moves(chess_state, moves, 0, chess_state->friendly_pieces->king_square, chess_state->friendly_colour);
   for (size_t i = 0; i < move_count; i++) {
     if (is_legal(chess_state, moves[i])) {
       return 0;
     }
   }
-  move_count = king_moves(chess_state, moves, 0, chess_state->friendly_pieces->king_square, chess_state->friendly_colour, GENERATE_ALL);
+  move_count = king_moves(chess_state, moves, 0, chess_state->friendly_pieces->king_square, chess_state->friendly_colour);
   for (size_t i = 0; i < move_count; i++) {
     if (is_legal(chess_state, moves[i])) {
       return 0;
     }
   }
   FOR_EACH_PIECE(chess_state->friendly_pieces, pawn, square) {
-    size_t move_count = pawn_moves(chess_state, moves, 0, square, chess_state->friendly_colour, GENERATE_ALL);
+    size_t move_count = pawn_moves(chess_state, moves, 0, square, chess_state->friendly_colour);
     for (size_t i = 0; i < move_count; i++) {
       if (is_legal(chess_state, moves[i])) {
         return 0;
@@ -102,7 +102,7 @@ int is_stalemate(const chess_state_t* chess_state) {
   }
 
   FOR_EACH_PIECE(chess_state->friendly_pieces, knight, square) {
-    size_t move_count = knight_moves(chess_state, moves, 0, square, chess_state->friendly_colour, GENERATE_ALL);
+    size_t move_count = knight_moves(chess_state, moves, 0, square, chess_state->friendly_colour);
     for (size_t i = 0; i < move_count; i++) {
       if (is_legal(chess_state, moves[i])) {
         return 0;
@@ -111,7 +111,7 @@ int is_stalemate(const chess_state_t* chess_state) {
   }
 
   FOR_EACH_PIECE(chess_state->friendly_pieces, light_bishop, square) {
-    size_t move_count = sliding_moves(chess_state, moves, 0, square, chess_state->friendly_colour, GENERATE_ALL, bishop_increments_list, BISHOP_INCREMENTS_COUNT);
+    size_t move_count = sliding_moves(chess_state, moves, 0, square, chess_state->friendly_colour, bishop_increments_list, BISHOP_INCREMENTS_COUNT);
     for (size_t i = 0; i < move_count; i++) {
       if (is_legal(chess_state, moves[i])) {
         return 0;
@@ -120,7 +120,7 @@ int is_stalemate(const chess_state_t* chess_state) {
   }
 
   FOR_EACH_PIECE(chess_state->friendly_pieces, dark_bishop, square) {
-    size_t move_count = sliding_moves(chess_state, moves, 0, square, chess_state->friendly_colour, GENERATE_ALL, bishop_increments_list, BISHOP_INCREMENTS_COUNT);
+    size_t move_count = sliding_moves(chess_state, moves, 0, square, chess_state->friendly_colour, bishop_increments_list, BISHOP_INCREMENTS_COUNT);
     for (size_t i = 0; i < move_count; i++) {
       if (is_legal(chess_state, moves[i])) {
         return 0;
@@ -129,7 +129,7 @@ int is_stalemate(const chess_state_t* chess_state) {
   }
 
   FOR_EACH_PIECE(chess_state->friendly_pieces, rook, square) {
-    size_t move_count = sliding_moves(chess_state, moves, 0, square, chess_state->friendly_colour, GENERATE_ALL, rook_increments_list, ROOK_INCREMENTS_COUNT);
+    size_t move_count = sliding_moves(chess_state, moves, 0, square, chess_state->friendly_colour, rook_increments_list, ROOK_INCREMENTS_COUNT);
     for (size_t i = 0; i < move_count; i++) {
       if (is_legal(chess_state, moves[i])) {
         return 0;
@@ -137,7 +137,7 @@ int is_stalemate(const chess_state_t* chess_state) {
     }
   }
   FOR_EACH_PIECE(chess_state->friendly_pieces, queen, square) {
-    size_t move_count = sliding_moves(chess_state, moves, 0, square, chess_state->friendly_colour, GENERATE_ALL, queen_increments_list, QUEEN_INCREMENTS_COUNT);
+    size_t move_count = sliding_moves(chess_state, moves, 0, square, chess_state->friendly_colour, queen_increments_list, QUEEN_INCREMENTS_COUNT);
     for (size_t i = 0; i < move_count; i++) {
       if (is_legal(chess_state, moves[i])) {
         return 0;
