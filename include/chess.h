@@ -845,7 +845,7 @@ size_t sliding_moves(const chess_state_t* chess_state, move_t* moves,
                      const sq0x88_t* increments, int increments_count);
 
 size_t sliding_quiets(const chess_state_t* chess_state, move_t* moves,
-                      size_t move_count, sq0x88_t from, colour_t colour,
+                      size_t move_count, sq0x88_t from,
                       const sq0x88_t* increments, int increments_count);
 
 size_t sliding_captures(const chess_state_t* chess_state, move_t* moves,

@@ -93,16 +93,13 @@ size_t knight_captures(const chess_state_t* chess_state, move_t* moves,
 }
 
 size_t knight_quiets(const chess_state_t* chess_state, move_t* moves,
-                     size_t move_count, sq0x88_t from, colour_t colour) {
+                     size_t move_count, sq0x88_t from) {
   for (int i = 0; i < KNIGHT_INCREMENTS_COUNT; i++) {
     sq0x88_t to = from + knight_increments_list[i];
-    if (off_the_board(to) || piece_is_colour(chess_state, to, colour)) {
+    if (off_the_board(to) || piece(chess_state, to) != EMPTY) {
       continue;
     }
-    piece_t target_piece = piece(chess_state, to);
-    if (target_piece == EMPTY) {
-      moves[move_count++] = move(from, to, QUIET_MOVE);
-    }
+    moves[move_count++] = move(from, to, QUIET_MOVE);
   }
   return move_count;
 }
@@ -142,16 +139,14 @@ size_t king_captures(const chess_state_t* chess_state, move_t* moves,
 }
 
 size_t king_quiets(const chess_state_t* chess_state, move_t* moves,
-                   size_t move_count, sq0x88_t king_square, colour_t colour) {
+                   size_t move_count, sq0x88_t king_square) {
   for (int i = 0; i < KING_INCREMENTS_COUNT; i++) {
     sq0x88_t to = king_square + king_increments_list[i];
-    if (off_the_board(to) || piece_is_colour(chess_state, to, colour)) {
+
+    if (off_the_board(to) || piece(chess_state, to) != EMPTY) {
       continue;
     }
-    piece_t target_piece = piece(chess_state, to);
-    if (target_piece == EMPTY) {
-      moves[move_count++] = move(king_square, to, QUIET_MOVE);
-    }
+    moves[move_count++] = move(king_square, to, QUIET_MOVE);
   }
 
   return move_count;
@@ -258,7 +253,6 @@ size_t pawn_quiets(const chess_state_t* chess_state, move_t* moves,
                    size_t move_count, sq0x88_t from, colour_t colour) {
   // if is promoting
   sq0x88_t inc = pawn_push_increment(colour);
-  colour_t enemy_colour = opposite_colour(colour);
   sq0x88_t to = from + inc;
   if (is_promoting(from, colour)) {
     return move_count;
@@ -316,9 +310,8 @@ size_t sliding_moves(const chess_state_t* chess_state, move_t* moves,
 }
 
 size_t sliding_quiets(const chess_state_t* chess_state, move_t* moves,
-                      size_t move_count, sq0x88_t from, colour_t colour,
+                      size_t move_count, sq0x88_t from,
                       const sq0x88_t* increments, int increments_count) {
-  (void)colour;
   for (sq0x88_t i = 0; i < increments_count; i++) {
     sq0x88_t inc = increments[i];
     sq0x88_t to;
@@ -423,7 +416,6 @@ size_t generate_moves_nocheck_internal(const chess_state_t* chess_state,
   return move_count;
 }
 
-
 size_t generate_captures_nocheck_internal(const chess_state_t* chess_state,
                                           move_t* moves, colour_t colour) {
   size_t move_count = 0;
@@ -476,32 +468,32 @@ size_t generate_quiets_nocheck_internal(const chess_state_t* chess_state,
                               piece_lists->king_square, colour);
 
   move_count = king_quiets(chess_state, moves, move_count,
-                           piece_lists->king_square, colour);
+                           piece_lists->king_square);
 
   FOR_EACH_PIECE(piece_lists, queen, square) {
-    move_count = sliding_quiets(chess_state, moves, move_count, square, colour,
+    move_count = sliding_quiets(chess_state, moves, move_count, square,
                                 queen_increments_list, QUEEN_INCREMENTS_COUNT);
   }
 
   FOR_EACH_PIECE(piece_lists, rook, square) {
-    move_count = sliding_quiets(chess_state, moves, move_count, square, colour,
+    move_count = sliding_quiets(chess_state, moves, move_count, square,
                                 rook_increments_list, ROOK_INCREMENTS_COUNT);
   }
 
   FOR_EACH_PIECE(piece_lists, light_bishop, square) {
     move_count =
-        sliding_quiets(chess_state, moves, move_count, square, colour,
+        sliding_quiets(chess_state, moves, move_count, square,
                        bishop_increments_list, BISHOP_INCREMENTS_COUNT);
   }
 
   FOR_EACH_PIECE(piece_lists, dark_bishop, square) {
     move_count =
-        sliding_quiets(chess_state, moves, move_count, square, colour,
+        sliding_quiets(chess_state, moves, move_count, square,
                        bishop_increments_list, BISHOP_INCREMENTS_COUNT);
   }
 
   FOR_EACH_PIECE(piece_lists, knight, square) {
-    move_count = knight_quiets(chess_state, moves, move_count, square, colour);
+    move_count = knight_quiets(chess_state, moves, move_count, square);
   }
 
   FOR_EACH_PIECE(piece_lists, pawn, square) {
@@ -774,7 +766,7 @@ size_t generate_moves_check_internal(const chess_state_t* chess_state,
 }
 
 size_t generate_captures_check_internal(const chess_state_t* chess_state,
-                                     move_t* moves, colour_t colour) {
+                                        move_t* moves, colour_t colour) {
   // if more than 1 attacker, only king moves
   // if only 1 attacker, capture of attacker, block of attacker, king moves
   size_t move_count = 0;
@@ -782,7 +774,8 @@ size_t generate_captures_check_internal(const chess_state_t* chess_state,
 
   sq0x88_t king_square = piece_lists->king_square;
 
-  move_count = king_captures(chess_state, moves, move_count, king_square, colour);
+  move_count =
+      king_captures(chess_state, moves, move_count, king_square, colour);
 
   if (is_double_check(chess_state)) {
     return move_count;
@@ -797,7 +790,7 @@ size_t generate_captures_check_internal(const chess_state_t* chess_state,
 }
 
 size_t generate_quiets_check_internal(const chess_state_t* chess_state,
-                                     move_t* moves, colour_t colour) {
+                                      move_t* moves, colour_t colour) {
   // if more than 1 attacker, only king moves
   // if only 1 attacker, capture of attacker, block of attacker, king moves
   size_t move_count = 0;
@@ -805,7 +798,7 @@ size_t generate_quiets_check_internal(const chess_state_t* chess_state,
 
   sq0x88_t king_square = piece_lists->king_square;
 
-  move_count = king_quiets(chess_state, moves, move_count, king_square, colour);
+  move_count = king_quiets(chess_state, moves, move_count, king_square);
 
   if (is_double_check(chess_state)) {
     return move_count;
@@ -826,7 +819,7 @@ size_t generate_quiets_check_internal(const chess_state_t* chess_state,
 }
 
 size_t generate_promotions_check_internal(const chess_state_t* chess_state,
-                                     move_t* moves, colour_t colour) {
+                                          move_t* moves, colour_t colour) {
   // if more than 1 attacker, only king moves
   // if only 1 attacker, capture of attacker, block of attacker, king moves
   size_t move_count = 0;
@@ -858,7 +851,7 @@ size_t generate_promotions_check_internal(const chess_state_t* chess_state,
 }
 
 size_t generate_moves(const chess_state_t* chess_state, move_t* moves,
-                               colour_t colour) {
+                      colour_t colour) {
   size_t move_count;
 
   if (is_check(chess_state)) {
@@ -901,7 +894,8 @@ size_t generate_promotions(const chess_state_t* chess_state, move_t* moves,
   if (is_check(chess_state)) {
     move_count = generate_promotions_check_internal(chess_state, moves, colour);
   } else {
-    move_count = generate_promotions_nocheck_internal(chess_state, moves, colour);
+    move_count =
+        generate_promotions_nocheck_internal(chess_state, moves, colour);
   }
 
   return move_count;
