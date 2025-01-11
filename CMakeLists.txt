@@ -30,6 +30,7 @@ add_executable(test_inc_movegen tests/incremental_movegen.cpp)
 add_executable(test_is_check_after_move tests/check_after_move.cpp)
 add_executable(test_fuzz_notation tests/fuzz.cpp)
 add_executable(alphaBeta tests/alpha_beta.cpp)
+add_executable(profTest tests/profile_test.cpp)
 
 # Link the test executables with Catch2
 target_link_libraries(test_perft PRIVATE Catch2::Catch2WithMain chess)
@@ -40,6 +41,7 @@ target_link_libraries(test_inc_movegen PRIVATE Catch2::Catch2WithMain chess)
 target_link_libraries(test_is_check_after_move PRIVATE Catch2::Catch2WithMain chess)
 target_link_libraries(test_fuzz_notation PRIVATE Catch2::Catch2WithMain chess)
 target_link_libraries(alphaBeta PRIVATE chess)
+target_link_libraries(profTest PRIVATE chess)
 
 include(CTest)
 include(Catch)
