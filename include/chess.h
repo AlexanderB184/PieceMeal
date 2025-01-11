@@ -710,13 +710,6 @@ int is_legal_internal(const chess_state_t* chess_state, move_t move,
 // although this is not required and incremental legality checking is supported
 // and even encouraged
 
-enum generator_mode {
-  GENERATE_QUIETS = 1,
-  GENERATE_CAPTURES = 2,
-  GENERATE_PROMOTIONS = 4,
-  GENERATE_ALL = GENERATE_QUIETS | GENERATE_CAPTURES | GENERATE_PROMOTIONS,
-};
-
 // generates psuedo legal moves, is_legal test should be performed before move
 // is played.
 size_t generate_moves(const chess_state_t* chess_state, move_t* moves,
