@@ -51,6 +51,7 @@ void remove_piece(chess_state_t* chess_state, sq0x88_t target) {
       pl_remove(pl->queen_list, pl->queen_count, pl->indices_list, index);
       break;
     default:
+    trace_ply_stack(chess_state);
       assert(0 && "invalid piece code");
       break;
   }
