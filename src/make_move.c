@@ -37,11 +37,12 @@ void update_board(chess_state_t* chess_state, move_t move) {
     remove_piece(chess_state, to);
   }
 
-  //  move piece
-  move_piece(chess_state, from, to);
+  if (!is_promotion(move)) {
+    //  move piece
+    move_piece(chess_state, from, to);
 
-  if (is_promotion(move)) {
-    remove_piece(chess_state, to);
+  } else {
+    remove_piece(chess_state, from);
     place_piece(chess_state, to,
                 get_promotes_to(move) | chess_state->friendly_colour);
   }
