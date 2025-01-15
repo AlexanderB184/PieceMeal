@@ -4,20 +4,13 @@
 
 #include "../include/chess.h"
 
-#define pl_remove(list, count, indices, index) \
-  (list)[index] = (list)[--(count)];           \
-  (indices)[sq0x88_to_sq8x8((list)[index])] = index;
-
-#define pl_add(list, count, indices, target)    \
-  (list)[count] = target;                       \
-  (indices)[sq0x88_to_sq8x8(target)] = (count); \
-  (count)++;
-
 void remove_piece(chess_state_t* chess_state, sq0x88_t target) {
   piece_t piece = chess_state->board[target];
-  chess_state->zobrist = zobrist_flip_piece(chess_state->zobrist, piece, target);
+  chess_state->zobrist =
+      zobrist_flip_piece(chess_state->zobrist, piece, target);
 
   piece_list_t* pl;
+
   if (piece & WHITE) {
     pl = &chess_state->white_pieces;
   } else if (piece & BLACK) {
@@ -27,82 +20,101 @@ void remove_piece(chess_state_t* chess_state, sq0x88_t target) {
     assert(0 && "piece has no colour");
     return;
   }
-  int index = pl->indices_list[sq0x88_to_sq8x8(target)];
+
+  uint8_t index = pl->indices_list[sq0x88_to_sq8x8(target)];
+  uint8_t* piece_count;
+  sq0x88_t* piece_list;
+
   switch (piece & PIECE_MASK) {
     case PAWN:
-      pl_remove(pl->pawn_list, pl->pawn_count, pl->indices_list, index);
+      piece_count = &pl->pawn_count;
+      piece_list = pl->pawn_list;
       break;
     case KNIGHT:
-      pl_remove(pl->knight_list, pl->knight_count, pl->indices_list, index);
+      piece_count = &pl->knight_count;
+      piece_list = pl->knight_list;
       break;
     case BISHOP:
       if (is_light_square(target)) {
-        pl_remove(pl->light_bishop_list, pl->light_bishop_count,
-                  pl->indices_list, index);
+        piece_count = &pl->light_bishop_count;
+        piece_list = pl->light_bishop_list;
       } else {
-        pl_remove(pl->dark_bishop_list, pl->dark_bishop_count, pl->indices_list,
-                  index);
+        piece_count = &pl->dark_bishop_count;
+        piece_list = pl->dark_bishop_list;
       }
       break;
     case ROOK:
-      pl_remove(pl->rook_list, pl->rook_count, pl->indices_list, index);
+      piece_count = &pl->rook_count;
+      piece_list = pl->rook_list;
       break;
     case QUEEN:
-      pl_remove(pl->queen_list, pl->queen_count, pl->indices_list, index);
+      piece_count = &pl->queen_count;
+      piece_list = pl->queen_list;
       break;
     default:
-    trace_ply_stack(chess_state);
+      trace_ply_stack(chess_state);
       assert(0 && "invalid piece code");
       break;
   }
-
+  piece_list[index] = piece_list[--(*piece_count)];
+  pl->indices_list[sq0x88_to_sq8x8(piece_list[index])] = index;
   chess_state->board[target] = EMPTY;
 }
 
 void place_piece(chess_state_t* chess_state, sq0x88_t target, piece_t piece) {
-  chess_state->zobrist = zobrist_flip_piece(chess_state->zobrist, piece, target);
+  chess_state->zobrist =
+      zobrist_flip_piece(chess_state->zobrist, piece, target);
   piece_list_t* pl;
   if (piece & WHITE) {
     pl = &chess_state->white_pieces;
   } else if (piece & BLACK) {
     pl = &chess_state->black_pieces;
   } else {
-    // printf("%d,%x, %x\n", board.move_number, target, piece);
-
+    trace_ply_stack(chess_state);
     assert(0 && "piece has no colour");
     return;
   }
+  if (piece & KING) {
+    pl->king_square = target;
+      chess_state->board[target] = piece;
+      return;
+  }
+
+  sq0x88_t* piece_list;
+  uint8_t* piece_count;
   switch (piece & PIECE_MASK) {
-    case KING:
-      pl->king_square = target;
-      break;
     case PAWN:
-      pl_add(pl->pawn_list, pl->pawn_count, pl->indices_list, target);
+      piece_list = pl->pawn_list;
+      piece_count = &pl->pawn_count;
       break;
     case KNIGHT:
-      pl_add(pl->knight_list, pl->knight_count, pl->indices_list, target);
+       piece_list = pl->knight_list;
+      piece_count = &pl->knight_count;
       break;
     case BISHOP:
       if (is_light_square(target)) {
-        pl_add(pl->light_bishop_list, pl->light_bishop_count, pl->indices_list,
-               target);
-
+         piece_list = pl->light_bishop_list;
+         piece_count = &pl->light_bishop_count;
       } else {
-        pl_add(pl->dark_bishop_list, pl->dark_bishop_count, pl->indices_list,
-               target);
+         piece_list = pl->dark_bishop_list;
+         piece_count = &pl->dark_bishop_count;
       }
       break;
     case ROOK:
-      pl_add(pl->rook_list, pl->rook_count, pl->indices_list, target);
+       piece_list = pl->rook_list;
+       piece_count = &pl->rook_count;
       break;
     case QUEEN:
-      pl_add(pl->queen_list, pl->queen_count, pl->indices_list, target);
+       piece_list = pl->queen_list;
+       piece_count = &pl->queen_count;
       break;
     default:
       assert(0 && "invalid piece code");
       break;
   }
-
+  piece_list[*piece_count] = target;                       
+  pl->indices_list[sq0x88_to_sq8x8(target)] = *piece_count; 
+  (*piece_count)++;
   chess_state->board[target] = piece;
 }
 
@@ -117,7 +129,7 @@ void move_piece(chess_state_t* chess_state, sq0x88_t from, sq0x88_t to) {
   } else if (piece & BLACK) {
     pl = &chess_state->black_pieces;
   } else {
-    trace_ply_stack(chess_state);//printf("%d,%x, %x, %x\n", board.move_number, from, to, piece);
+    trace_ply_stack(chess_state);
     assert(0 && "piece has no colour");
     return;
   }
@@ -138,11 +150,8 @@ void move_piece(chess_state_t* chess_state, sq0x88_t from, sq0x88_t to) {
       break;
     case BISHOP:
       if (is_light_square(from)) {
-        // printf("%d\n", index);
         pl->light_bishop_list[index] = to;
       } else {
-        // printf("%d\n", index);
-
         pl->dark_bishop_list[index] = to;
       }
       break;
