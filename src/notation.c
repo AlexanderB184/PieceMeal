@@ -710,7 +710,7 @@ long write_movetext_debug(char* buffer, long buffer_size,
                           const chess_state_t* chess_state) {
   long bytes_written = 0, out;
   for (int i = 0; i < chess_state->ply_counter; i++) {
-    move_t move = chess_state->ply_stack[i].move;
+    move_t move = uncompress_move(chess_state->ply_stack[i].move);
     out = write_long_algebraic_notation(buffer + bytes_written,
                                         buffer_size - bytes_written, move);
     if (out == -1) break;
@@ -733,7 +733,7 @@ long write_movetext(char* buffer, long buffer_size,
     load_position(&state, start_position);
   }
   for (int i = 0; i < chess_state->ply_counter; i++) {
-    move_t move = chess_state->ply_stack[i].move;
+    move_t move = uncompress_move(chess_state->ply_stack[i].move);
     out = write_algebraic_notation(buffer + bytes_written,
                                    buffer_size - bytes_written, &state, move);
     make_move(&state, move);

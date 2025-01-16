@@ -274,33 +274,14 @@ typedef uint16_t compact_move_t;
 typedef uint64_t zobrist_t;
 
 typedef struct ply_stack_item_t {
-  move_t move;
+  compact_move_t move;
   sq0x88_t enpassent;
-  int half_move_clock;
-  castle_rights_t rights;
+  uint8_t half_move_clock;
+  uint8_t rights;
   piece_t captured;
   sq0x88_t check_square;
-  int n_checks;
-  int discovered_check;
-  size_t last_irreversible;
+  uint8_t n_checks;
 } ply_stack_item_t;
-
-typedef struct ply_stack_item_t2 {
-  compact_move_t move;
-  uint8_t half_move_clock;
-  int rights : 4;
-  int captured_enpassent : 4; // bit0 1 = enpassent, 0 = capture
-  sq0x88_t enpassent; // 1 or 4 bits
-  uint8_t half_move_clock; // max = 100 7 bits
-  castle_rights_t rights; // 4 bits
-  piece_t captured; // 6 options = 3 bits
-  sq0x88_t check_square; // 0 or 6 bits
-  int n_checks; // 2 bits
-  int discovered_check;
-  size_t last_irreversible; // combine with half move clock
-
-
-} ply_stack_item_t2;
 
 typedef struct {
   // piece data
@@ -516,7 +497,7 @@ static inline compact_move_t compress_move(move_t move) {
 }
 
 static inline move_t uncompress_move(compact_move_t compact_move) {
-  return move(sq8x8_to_sq0x88(compact_move), sq8x8_to_sq0x88(compact_move >> 6),
+  return move(sq8x8_to_sq0x88(compact_move & 0x3F), sq8x8_to_sq0x88((compact_move >> 6) & 0x3F),
               compact_move >> 12);
 }
 

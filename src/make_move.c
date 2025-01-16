@@ -8,24 +8,19 @@
 void push_ply_stack(chess_state_t* chess_state, move_t move) {
   if (chess_state->ply_counter >= chess_state->ply_stack_capacity) {
     chess_state->ply_stack_capacity = chess_state->ply_stack_capacity * 2;
-    size_t ply_stack_size =
-        sizeof(ply_stack_item_t) * chess_state->ply_stack_capacity;
-    size_t zobrist_stack_size =
-        sizeof(zobrist_t) * chess_state->ply_stack_capacity;
+    size_t ply_stack_size = sizeof(ply_stack_item_t) * chess_state->ply_stack_capacity;
+    size_t zobrist_stack_size = sizeof(zobrist_t) * chess_state->ply_stack_capacity;
     chess_state->ply_stack = realloc(chess_state->ply_stack, ply_stack_size);
-    chess_state->zobrist_stack =
-        realloc(chess_state->zobrist_stack, zobrist_stack_size);
+    chess_state->zobrist_stack = realloc(chess_state->zobrist_stack, zobrist_stack_size);
   }
   chess_state->ply_stack[chess_state->ply_counter] = (ply_stack_item_t){
-      .move = move,
+      .move = compress_move(move),
       .enpassent = chess_state->enpassent_target,
       .half_move_clock = chess_state->half_move_clock,
       .rights = chess_state->castle_rights,
       .captured = piece(chess_state, get_to(move)),
       .check_square = chess_state->check_square,
       .n_checks = chess_state->n_checks,
-      .discovered_check = chess_state->discovered_check,
-      .last_irreversible = chess_state->ply_of_last_irreversible_move,
   };
   chess_state->zobrist_stack[chess_state->ply_counter] = chess_state->zobrist;
   chess_state->ply_counter++;
@@ -156,14 +151,13 @@ void unmake_move(chess_state_t* chess_state) {
       chess_state->ply_stack[--chess_state->ply_counter];
 
   chess_state->check_square = unwound_state.check_square;
-  chess_state->discovered_check = unwound_state.discovered_check;
   chess_state->n_checks = unwound_state.n_checks;
   chess_state->enpassent_target = unwound_state.enpassent;
   chess_state->castle_rights = unwound_state.rights;
   chess_state->half_move_clock = unwound_state.half_move_clock;
-  chess_state->ply_of_last_irreversible_move = unwound_state.last_irreversible;
+  chess_state->ply_of_last_irreversible_move = chess_state->ply_counter - chess_state->half_move_clock;
 
-  move_t prev_move = unwound_state.move;
+  move_t prev_move = uncompress_move(unwound_state.move);
   piece_t captured_piece = unwound_state.captured;
 
   update_turn(chess_state);

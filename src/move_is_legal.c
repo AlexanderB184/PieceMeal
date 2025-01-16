@@ -83,7 +83,7 @@ void trace_ply_stack(const chess_state_t* chess_state) {
   char buffer[512];
   fprintf(stdout, "error at ply %d %d\n", chess_state->ply_counter, chess_state->black_to_move);
   for (int i = 0; i < chess_state->ply_counter; i++) {
-    move_t move = chess_state->ply_stack[i].move;
+    move_t move = uncompress_move(chess_state->ply_stack[i].move);
     fprintf(stdout, "%d %d %d\n", move.from, move.to, move.priority_and_flags);
     
   }

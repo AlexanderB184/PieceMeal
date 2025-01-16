@@ -63,7 +63,7 @@ void init_ply_stack(chess_state_t* chess_state) {
   chess_state->ply_stack_capacity = chess_state->ply_counter + 50ull;
   chess_state->ply_stack =
       malloc(sizeof(ply_stack_item_t) * chess_state->ply_stack_capacity);
-      chess_state->zobrist_stack =
+  chess_state->zobrist_stack =
       malloc(sizeof(zobrist_t) * chess_state->ply_stack_capacity);
 }
 
@@ -78,8 +78,12 @@ void copy_position(chess_state_t* chess_state,
   memcpy(chess_state, state_to_copy, sizeof(chess_state_t));
   size_t ply_stack_size =
       sizeof(ply_stack_item_t) * chess_state->ply_stack_capacity;
+  size_t zobrist_stack_size =
+      sizeof(zobrist_t) * chess_state->ply_stack_capacity;
   chess_state->ply_stack = malloc(ply_stack_size);
+  chess_state->zobrist_stack = malloc(zobrist_stack_size);
   memcpy(chess_state->ply_stack, state_to_copy->ply_stack, ply_stack_size);
+  memcpy(chess_state->zobrist_stack, state_to_copy->zobrist_stack, zobrist_stack_size);
   if (chess_state->black_to_move) {
     chess_state->friendly_pieces = &chess_state->black_pieces;
     chess_state->enemy_pieces = &chess_state->white_pieces;
