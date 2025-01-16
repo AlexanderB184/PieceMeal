@@ -852,6 +852,16 @@ size_t sliding_captures(const chess_state_t* chess_state, move_t* moves,
                         size_t move_count, sq0x88_t from, colour_t colour,
                         const sq0x88_t* increments, int increments_count);
 
+
+typedef uint8_t attackers_t;
+
+typedef struct attack_table_t {
+  attackers_t white[64];
+  attackers_t black[64];
+} attack_table_t;
+
+
+
 #ifdef __cplusplus
 }
 #endif
