@@ -11,7 +11,7 @@ int is_draw_by_repetition(const chess_state_t* chess_state) {
   int repetitions = 1;
   for (int i = chess_state->ply_counter - 2;
        i >= chess_state->ply_of_last_irreversible_move; i -= 2) {
-    if (chess_state->ply_stack[i].zobrist == current_zobrist) {
+    if (chess_state->zobrist_stack[i] == current_zobrist) {
       repetitions++;
     }
   }

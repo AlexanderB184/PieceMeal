@@ -40,7 +40,9 @@ static const piece_t empty_board[RANK_SIZE * FILE_SIZE] = {
 void release_position(chess_state_t* chess_state) {
   if (chess_state->ply_stack) {
     free(chess_state->ply_stack);
+    free(chess_state->zobrist_stack);
     chess_state->ply_stack = NULL;
+    chess_state->zobrist_stack = NULL;
   }
 }
 
@@ -61,6 +63,8 @@ void init_ply_stack(chess_state_t* chess_state) {
   chess_state->ply_stack_capacity = chess_state->ply_counter + 50ull;
   chess_state->ply_stack =
       malloc(sizeof(ply_stack_item_t) * chess_state->ply_stack_capacity);
+      chess_state->zobrist_stack =
+      malloc(sizeof(zobrist_t) * chess_state->ply_stack_capacity);
 }
 
 void load_start_position(chess_state_t* chess_state) {

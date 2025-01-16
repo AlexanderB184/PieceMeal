@@ -282,9 +282,25 @@ typedef struct ply_stack_item_t {
   sq0x88_t check_square;
   int n_checks;
   int discovered_check;
-  zobrist_t zobrist;
   size_t last_irreversible;
 } ply_stack_item_t;
+
+typedef struct ply_stack_item_t2 {
+  compact_move_t move;
+  uint8_t half_move_clock;
+  int rights : 4;
+  int captured_enpassent : 4; // bit0 1 = enpassent, 0 = capture
+  sq0x88_t enpassent; // 1 or 4 bits
+  uint8_t half_move_clock; // max = 100 7 bits
+  castle_rights_t rights; // 4 bits
+  piece_t captured; // 6 options = 3 bits
+  sq0x88_t check_square; // 0 or 6 bits
+  int n_checks; // 2 bits
+  int discovered_check;
+  size_t last_irreversible; // combine with half move clock
+
+
+} ply_stack_item_t2;
 
 typedef struct {
   // piece data
@@ -303,6 +319,7 @@ typedef struct {
 
   // ply stack for unmake move and 3-fold repetition
   ply_stack_item_t* ply_stack;
+  zobrist_t* zobrist_stack;
   int ply_stack_capacity;
   int ply_of_last_irreversible_move;
 
