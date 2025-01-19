@@ -49,6 +49,30 @@ TEST_CASE("Draw by threefold repetition 2", "[IS GAMEOVER]") {
     CHECK(!is_draw_by_repetition(&chess_state));
     make_move(&chess_state, move(E7, E8, QUIET_MOVE));
   }
+  CHECK(!is_draw_by_repetition(&chess_state));
+  make_move(&chess_state, move(E1, E2, QUIET_MOVE));
+  CHECK(!is_draw_by_repetition(&chess_state));
+  make_move(&chess_state, move(E8, E7, QUIET_MOVE));
+  CHECK(is_draw_by_repetition(&chess_state));
+}
+
+TEST_CASE("Draw by threefold repetition 3", "[IS GAMEOVER]") {
+  load_position(&chess_state,
+                "r1bqkbnr/pppp1ppp/8/4n3/4P3/8/PPPP1PPP/RNBQKB1R w KQkq - 0 4");
+  for (int i = 0; i < 2; i++) {
+    CHECK(!is_draw_by_repetition(&chess_state));
+    make_move(&chess_state, move(E1, E2, QUIET_MOVE));
+    CHECK(!is_draw_by_repetition(&chess_state));
+    make_move(&chess_state, move(E8, E7, QUIET_MOVE));
+    CHECK(!is_draw_by_repetition(&chess_state));
+    make_move(&chess_state, move(E2, E1, QUIET_MOVE));
+    CHECK(!is_draw_by_repetition(&chess_state));
+    make_move(&chess_state, move(E7, E8, QUIET_MOVE));
+  }
+  CHECK(!is_draw_by_repetition(&chess_state));
+  make_move(&chess_state, move(E1, E2, QUIET_MOVE));
+  CHECK(!is_draw_by_repetition(&chess_state));
+  make_move(&chess_state, move(E8, E7, QUIET_MOVE));
   CHECK(is_draw_by_repetition(&chess_state));
 }
 
