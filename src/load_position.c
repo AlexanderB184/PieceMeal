@@ -225,9 +225,10 @@ long load_position(chess_state_t* chess_state, const char* buffer) {
   if (bytes_read < size && buffer[bytes_read] >= '0' &&
       buffer[bytes_read] <= '9') {
     int half_move_clock = buffer[bytes_read++] - '0';
-    if (bytes_read < size && buffer[bytes_read] >= '0' &&
+    while (bytes_read < size && buffer[bytes_read] >= '0' &&
         buffer[bytes_read] <= '9') {
       half_move_clock = 10 * half_move_clock + buffer[bytes_read] - '0';
+      bytes_read++;
     }
     chess_state->half_move_clock = half_move_clock;
     bytes_read += skip_whitespace(buffer + bytes_read);
