@@ -10,7 +10,7 @@ int is_draw_by_repetition(const chess_state_t* chess_state) {
   zobrist_t current_zobrist = chess_state->zobrist;
   int repetitions = 1;
   for (int i = chess_state->ply_counter - 2;
-       i >= chess_state->ply_of_last_irreversible_move; i -= 2) {
+       i >= chess_state->ply_of_last_irreversible_move && i >= 2; i -= 2) {
     if (chess_state->ply_stack[i].zobrist == current_zobrist) {
       repetitions++;
     }
@@ -148,6 +148,12 @@ int is_stalemate(const chess_state_t* chess_state) {
 }
 
 enum gameover_state is_gameover(const chess_state_t* chess_state) {
+  if (is_checkmate(chess_state)) {
+    return CHECKMATE;
+  }
+  if (is_stalemate(chess_state)) {
+    return STALEMATE;
+  }
   if (is_draw_by_50_move_rule(chess_state)) {
     return DRAW_BY_50_MOVE_RULE;
   }
@@ -156,12 +162,6 @@ enum gameover_state is_gameover(const chess_state_t* chess_state) {
   }
   if (is_draw_by_insufficient_material(chess_state)) {
     return DRAW_BY_INSUFFICIENT_MATERIAL;
-  }
-  if (is_checkmate(chess_state)) {
-    return CHECKMATE;
-  }
-  if (is_stalemate(chess_state)) {
-    return STALEMATE;
   }
   return ONGOING;
 }
