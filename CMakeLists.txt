@@ -3,7 +3,7 @@ cmake_policy(SET CMP0048 NEW)
 
 project(PieceMeal VERSION 1.1.0)
 
-add_library(chess SHARED src/game-over.c src/increment-vectors.c src/load_position.c src/make_move.c src/move_generation.c src/move_is_legal.c src/notation.c src/piece_list.c src/threats.c src/zobrist.c include/chess.h)
+add_library(chess SHARED main.c include/chess.h)
 
 add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 add_compile_options(-O3)

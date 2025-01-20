@@ -2,23 +2,8 @@
 #include <stdlib.h>
 
 #include "../include/chess.h"
+#include "../include/increments.h"
 
-#define KING_INCREMENTS_COUNT 8
-#define QUEEN_INCREMENTS_COUNT 8
-#define KNIGHT_INCREMENTS_COUNT 8
-#define BISHOP_INCREMENTS_COUNT 4
-#define ROOK_INCREMENTS_COUNT 4
-
-static const sq0x88_t king_increments_list[KING_INCREMENTS_COUNT] = {
-    1, 255, 240, 16, 241, 239, 15, 17};
-static const sq0x88_t knight_increments_list[KNIGHT_INCREMENTS_COUNT] = {
-    18, 14, 33, 31, 242, 238, 225, 223};
-static const sq0x88_t queen_increments_list[QUEEN_INCREMENTS_COUNT] = {
-    1, 255, 240, 16, 241, 239, 15, 17};
-static const sq0x88_t bishop_increments_list[BISHOP_INCREMENTS_COUNT] = {
-    241, 239, 15, 17};
-static const sq0x88_t rook_increments_list[ROOK_INCREMENTS_COUNT] = {1, 255,
-                                                                     240, 16};
 
 // todo
 // make piece list base move generation functions i.e. size_t
@@ -567,7 +552,7 @@ size_t generate_captures_of(const chess_state_t* chess_state, move_t* moves,
 size_t generate_promotion_captures_of(const chess_state_t* chess_state,
                                       move_t* moves, size_t move_count,
                                       colour_t colour, sq0x88_t target) {
-  const piece_list_t* piece_lists = get_piece_list(chess_state, colour);
+  //const piece_list_t* piece_lists = get_piece_list(chess_state, colour);
   if (sq8x8_to_rank07(target) != backrank(colour)) {
     return move_count;
   }
@@ -740,8 +725,6 @@ size_t generate_captures_check_internal(const chess_state_t* chess_state,
   if (is_double_check(chess_state)) {
     return move_count;
   }
-
-  piece_t checking_piece = piece(chess_state, checking_square(chess_state));
 
   move_count = generate_captures_of(chess_state, moves, move_count, colour,
                                     checking_square(chess_state));

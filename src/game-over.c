@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "../include/chess.h"
+#include "../include/increments.h"
 
 int is_draw_by_repetition(const chess_state_t* chess_state) {
   if (chess_state->ply_counter - chess_state->ply_of_last_irreversible_move <
@@ -69,23 +70,6 @@ int is_checkmate(const chess_state_t* chess_state) {
   }
   return 1;
 }
-
-#define KING_INCREMENTS_COUNT 8
-#define QUEEN_INCREMENTS_COUNT 8
-#define KNIGHT_INCREMENTS_COUNT 8
-#define BISHOP_INCREMENTS_COUNT 4
-#define ROOK_INCREMENTS_COUNT 4
-
-static const sq0x88_t king_increments_list[KING_INCREMENTS_COUNT] = {
-    1, 255, 240, 16, 241, 239, 15, 17};
-static const sq0x88_t knight_increments_list[KNIGHT_INCREMENTS_COUNT] = {
-    18, 14, 33, 31, 242, 238, 225, 223};
-static const sq0x88_t queen_increments_list[QUEEN_INCREMENTS_COUNT] = {
-    1, 255, 240, 16, 241, 239, 15, 17};
-static const sq0x88_t bishop_increments_list[BISHOP_INCREMENTS_COUNT] = {
-    241, 239, 15, 17};
-static const sq0x88_t rook_increments_list[ROOK_INCREMENTS_COUNT] = {1, 255,
-                                                                     240, 16};
 
 int is_stalemate(const chess_state_t* chess_state) {
   if (is_check(chess_state)) return 0;
