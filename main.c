@@ -8,3 +8,4 @@
 #include "src/piece_list.c"
 #include "src/threats.c"
 #include "src/zobrist.c"
+#include "src/eval.c"
