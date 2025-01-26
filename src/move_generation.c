@@ -181,14 +181,12 @@ size_t pawn_moves(const chess_state_t* chess_state, move_t* moves,
     }
     return move_count;
   }
-  if (!off_the_board(to) && piece(chess_state, to) == EMPTY) {
+  if (piece(chess_state, to) == EMPTY) {
     moves[move_count++] = move(from, to, QUIET_MOVE);
-  }
-  to = from + 2 * inc;
-  if (!off_the_board(to) && piece(chess_state, to) == EMPTY &&
-      piece(chess_state, to - inc) == EMPTY &&
-      pawn_can_double_push(from, colour)) {
-    moves[move_count++] = move(from, to, DOUBLE_PAWN_PUSH);
+    to = from + 2 * inc;
+    if (pawn_can_double_push(from, colour) && piece(chess_state, to) == EMPTY) {
+      moves[move_count++] = move(from, to, DOUBLE_PAWN_PUSH);
+    }
   }
 
   to = from + inc + 1;
@@ -200,9 +198,27 @@ size_t pawn_moves(const chess_state_t* chess_state, move_t* moves,
     moves[move_count++] = move(from, to, CAPTURE);
   }
 
-  if (!off_the_board(enpassent_target(chess_state)) &&
-      can_capture_enpassent(chess_state, from, colour)) {
-    moves[move_count++] = move(from, enpassent_target(chess_state), ENPASSENT);
+  return move_count;
+}
+
+size_t enpassent_captures(const chess_state_t* chess_state, move_t* moves,
+                          size_t move_count, colour_t colour) {
+  if (off_the_board(enpassent_target(chess_state))) {
+    return move_count;
+  }
+
+  sq0x88_t to = enpassent_target(chess_state);
+  sq0x88_t from;
+
+  sq0x88_t inc = pawn_push_increment(colour);
+
+  from = to - inc - 1;
+  if (!off_the_board(from) && piece(chess_state, from) == (colour | PAWN)) {
+    moves[move_count++] = move(from, to, ENPASSENT);
+  }
+  from = to - inc + 1;
+  if (!off_the_board(from) && piece(chess_state, from) == (colour | PAWN)) {
+    moves[move_count++] = move(from, to, ENPASSENT);
   }
 
   return move_count;
@@ -224,11 +240,6 @@ size_t pawn_captures(const chess_state_t* chess_state, move_t* moves,
   to = from + inc - 1;
   if (!off_the_board(to) && piece_is_colour(chess_state, to, enemy_colour)) {
     moves[move_count++] = move(from, to, CAPTURE);
-  }
-
-  if (!off_the_board(enpassent_target(chess_state)) &&
-      can_capture_enpassent(chess_state, from, colour)) {
-    moves[move_count++] = move(from, enpassent_target(chess_state), ENPASSENT);
   }
 
   return move_count;
@@ -358,6 +369,8 @@ size_t generate_moves_nocheck_internal(const chess_state_t* chess_state,
     move_count = pawn_moves(chess_state, moves, move_count, square, colour);
   }
 
+  move_count = enpassent_captures(chess_state, moves, move_count, colour);
+
   return move_count;
 }
 
@@ -401,6 +414,8 @@ size_t generate_captures_nocheck_internal(const chess_state_t* chess_state,
   FOR_EACH_PIECE(piece_lists, pawn, square) {
     move_count = pawn_captures(chess_state, moves, move_count, square, colour);
   }
+
+  move_count = enpassent_captures(chess_state, moves, move_count, colour);
 
   return move_count;
 }
@@ -533,18 +548,7 @@ size_t generate_captures_of(const chess_state_t* chess_state, move_t* moves,
   }
 
   if (enpassent_target(chess_state) == target + inc) {
-    from = target + 1;
-    if (!off_the_board(from) && piece(chess_state, from) == friendly_pawn &&
-        can_capture_enpassent(chess_state, from, colour)) {
-      moves[move_count++] =
-          move(from, enpassent_target(chess_state), ENPASSENT);
-    }
-    from = target - 1;
-    if (!off_the_board(from) && piece(chess_state, from) == friendly_pawn &&
-        can_capture_enpassent(chess_state, from, colour)) {
-      moves[move_count++] =
-          move(from, enpassent_target(chess_state), ENPASSENT);
-    }
+    move_count = enpassent_captures(chess_state, moves, move_count, colour);
   }
   return move_count;
 }
@@ -552,7 +556,7 @@ size_t generate_captures_of(const chess_state_t* chess_state, move_t* moves,
 size_t generate_promotion_captures_of(const chess_state_t* chess_state,
                                       move_t* moves, size_t move_count,
                                       colour_t colour, sq0x88_t target) {
-  //const piece_list_t* piece_lists = get_piece_list(chess_state, colour);
+  // const piece_list_t* piece_lists = get_piece_list(chess_state, colour);
   if (sq8x8_to_rank07(target) != backrank(colour)) {
     return move_count;
   }
