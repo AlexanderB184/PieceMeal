@@ -1,5 +1,5 @@
-#include "chess.h"
-#include "piece_square_tables.h"
+#include "../include/chess.h"
+#include "../include/piece_square_tables.h"
 
 centipawn_t base_material_score(const chess_state_t* position) {
   centipawn_t friendly_material =
