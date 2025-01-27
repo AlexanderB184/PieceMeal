@@ -1,9 +1,12 @@
 
+#ifdef PM_USE_AVX
+#include <immintrin.h>
+#endif
+
 #include <stdlib.h>
 
 #include "../include/chess.h"
 #include "../include/increments.h"
-
 
 // todo
 // make piece list base move generation functions i.e. size_t
@@ -150,15 +153,31 @@ size_t castling_moves(const chess_state_t* chess_state, move_t* moves,
   return move_count;
 }
 
+#define CAST_MOVE_AS_INT(...) (*(uint32_t*)&(__VA_ARGS__))
+
 // flags should either be QUIET_MOVE or CAPTURE, add_promotion_moves will handle
 // the promotion flags
 size_t add_promotion_moves(move_t* moves, size_t move_count, sq0x88_t from,
                            sq0x88_t to, int flags) {
+#ifdef PM_USE_AVX
+  const __m128i promotion_flags = (__m128i){
+      (uint64_t)CAST_MOVE_AS_INT((move_t){0, 0, QUEEN_PROMOTION}) << 0 |
+      (uint64_t)CAST_MOVE_AS_INT((move_t){0, 0, ROOK_PROMOTION}) << 32,
+      (uint64_t)CAST_MOVE_AS_INT((move_t){0, 0, BISHOP_PROMOTION}) << 0 |
+      (uint64_t)CAST_MOVE_AS_INT((move_t){0, 0, KNIGHT_PROMOTION}) << 32,
+  };
+  move_t move_no_promote_flag = move(from, to, flags);
+  __m128i moves_no_promote = _mm_set1_epi32(CAST_MOVE_AS_INT(move_no_promote_flag));
+  __m128i moves_promote = moves_no_promote ^ promotion_flags;
+  _mm_storeu_si128((__m128i*)(moves + move_count), moves_promote);
+  return move_count + 4;
+#else
   moves[move_count++] = move(from, to, flags | QUEEN_PROMOTION);
   moves[move_count++] = move(from, to, flags | ROOK_PROMOTION);
   moves[move_count++] = move(from, to, flags | BISHOP_PROMOTION);
   moves[move_count++] = move(from, to, flags | KNIGHT_PROMOTION);
   return move_count;
+#endif
 }
 
 size_t pawn_moves(const chess_state_t* chess_state, move_t* moves,
