@@ -120,8 +120,7 @@ void place_piece(chess_state_t* chess_state, sq0x88_t target, piece_t piece) {
 
 void move_piece(chess_state_t* chess_state, sq0x88_t from, sq0x88_t to) {
   piece_t piece = chess_state->board[from];
-  chess_state->zobrist = zobrist_flip_piece(chess_state->zobrist, piece, from);
-  chess_state->zobrist = zobrist_flip_piece(chess_state->zobrist, piece, to);
+  chess_state->zobrist = zobrist_move_piece(chess_state->zobrist, piece, from, to);
 
   piece_list_t* pl;
   if (piece & WHITE) {
