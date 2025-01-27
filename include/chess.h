@@ -753,7 +753,8 @@ zobrist_t zobrist_flip_turn(zobrist_t zobrist);
 // zobrist own inverse function to incrementally update the running zobrist hash
 // of the current position
 zobrist_t zobrist_flip_piece(zobrist_t zobrist, piece_t piece, sq0x88_t square);
-
+zobrist_t zobrist_move_piece(zobrist_t zobrist, piece_t piece,
+                             sq0x88_t from, sq0x88_t to);
 // checks if the position is drawn by any of draw by repetition, draw by
 // insufficient material, or draw by 50 move rule
 int is_draw(const chess_state_t* chess_state);
