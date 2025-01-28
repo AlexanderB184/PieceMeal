@@ -129,7 +129,7 @@ move_t root_search(chess_state_t* chess_state, int depth) {
 int main(int argc, const char* argv[]) {
   (void)argc;
   (void)argv;
-  int depth = 3;
+  int depth = 4;
   chess_state_t chess_state = {};
   FILE* f = fopen("../tests/test_positions.fen", "r");
   char* res;
