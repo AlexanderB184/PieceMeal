@@ -321,6 +321,19 @@ func (cs *ChessState) ReadMove(reader io.ByteReader) (Move, error) {
 	return move, nil
 }
 
+func (cs *ChessState) ParseMove(buffer []byte) (move Move, bytesRead int, err error) {
+
+	cbuffer := (*C.char)(unsafe.Pointer(&buffer[0]))
+	buflen := len(buffer)
+	bytesRead = int(C.read_long_algebraic_notation(cbuffer, C.long(buflen), (*C.chess_state_t)(cs), (*C.move_t)(&move)))
+
+	if bytesRead == -1 {
+		return move, 0, fmt.Errorf("invalid move notation")
+	}
+
+	return move, bytesRead, nil
+}
+
 func (move *Move) IsCapture() bool {
 	return (int(C.get_flags(*(*C.move_t)(move))) & CAPTURE) != 0
 }
