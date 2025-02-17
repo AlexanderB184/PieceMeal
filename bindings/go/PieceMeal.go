@@ -137,7 +137,7 @@ func (square *Square) String() string {
 	return C.GoString(&buffer[0])
 }
 
-func (piece *Piece) String() string {
+func (piece *Piece) Format() string {
 	buffer := [8]C.char{}
 	out := C.write_piece((*C.char)(unsafe.Pointer(&buffer[0])), 8, C.piece_t(*piece))
 	if out == -1 {
@@ -146,7 +146,7 @@ func (piece *Piece) String() string {
 	return C.GoString(&buffer[0])
 }
 
-func (move *Move) String() string {
+func (move *Move) LongAlgebraicNotation() string {
 	buffer := [8]C.char{}
 	out := C.write_long_algebraic_notation((*C.char)(unsafe.Pointer(&buffer[0])), 8, C.move_t(*move))
 	if out == -1 {
@@ -155,7 +155,7 @@ func (move *Move) String() string {
 	return C.GoString(&buffer[0])
 }
 
-func (cs *ChessState) String() string {
+func (cs *ChessState) Fen() string {
 	buffer := [1024]C.char{}
 	out := C.save_position((*C.chess_state_t)(cs), (*C.char)(unsafe.Pointer(&buffer[0])), 1024)
 	if out == -1 {
