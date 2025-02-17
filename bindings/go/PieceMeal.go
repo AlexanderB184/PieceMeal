@@ -128,7 +128,7 @@ func (chessState *ChessState) IsLegalMove(move Move) bool {
 	return C.is_legal((*C.chess_state_t)(chessState), C.move_t(move)) != 0
 }
 
-func (square *Square) String() string {
+func (square *Square) Format() string {
 	buffer := [3]C.char{0, 0, 0}
 	out := C.write_square((*C.char)(unsafe.Pointer(&buffer[0])), 3, C.sq0x88_t(*square))
 	if out == -1 {
@@ -164,14 +164,21 @@ func (cs *ChessState) Fen() string {
 	return C.GoString(&buffer[0])
 }
 
+func allocGame() *ChessState {
+	const n = unsafe.Sizeof(C.chess_state_t{})
+	p := C.malloc(C.ulong(n))
+	C.clear_position((*C.chess_state_t)(p))
+	return (*ChessState)(p)
+}
+
 func NewGame() *ChessState {
-	cs := &ChessState{}
+	cs := allocGame()
 	C.load_start_position((*C.chess_state_t)(cs))
 	return cs
 }
 
 func LoadGame(fen string) (*ChessState, error) {
-	cs := &ChessState{}
+	cs := allocGame()
 
 	cfen := C.CString(fen)
 	defer C.free(unsafe.Pointer(cfen))
@@ -193,6 +200,7 @@ func (chessState *ChessState) Clone() *ChessState {
 func (cs *ChessState) free() {
 	if cs != nil {
 		C.release_position((*C.chess_state_t)(cs))
+		C.free(unsafe.Pointer(cs))
 	}
 }
 
