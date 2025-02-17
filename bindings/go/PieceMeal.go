@@ -385,6 +385,18 @@ func (cs *ChessState) Turn() int {
 	return int(cs.ply_counter)/2 + 1
 }
 
+func (cs *ChessState) Ply() int {
+	return int(cs.ply_counter)
+}
+
+func (cs *ChessState) WhoToMove() Colour {
+	if cs.black_to_move == 0 {
+		return WHITE
+	} else {
+		return BLACK
+	}
+}
+
 func (cs *ChessState) BlackToMove() bool {
 	return cs.black_to_move != 0
 }
