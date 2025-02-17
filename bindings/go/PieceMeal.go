@@ -105,12 +105,20 @@ const (
 	QUEEN_CAPTURE_PROMOTION  = PROMOTION | CAPTURE | QUEEN_PROMOTE_TO
 )
 
-func (chessState *ChessState) MakeMove(move Move) {
+func (chessState *ChessState) MakeMove(move Move) error {
+	if !chessState.IsLegalMove(move) {
+		return fmt.Errorf("illegal move")
+	}
 	C.make_move((*C.chess_state_t)(chessState), C.move_t(move))
+	return nil
 }
 
-func (chessState *ChessState) UnmakeMove() {
+func (chessState *ChessState) UnmakeMove() error {
+	if chessState.Ply() == 0 {
+		return fmt.Errorf("cannot unmake from start position")
+	}
 	C.unmake_move((*C.chess_state_t)(chessState))
+	return nil
 }
 
 func (chessState *ChessState) IsLegalMove(move Move) bool {
