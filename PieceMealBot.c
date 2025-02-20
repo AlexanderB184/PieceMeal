@@ -463,9 +463,11 @@ static inline rank07_t backrank(colour_t colour) {
 
 // coordinate conversion funcitons
 
+// convert from 0x88 representation to board index
 static inline sq8x8_t sq0x88_to_sq8x8(sq0x88_t sq0x88) {
   return (sq0x88 + (sq0x88 & 7)) >> 1;
 }
+// convert from board index to 0x88 representation
 static inline sq0x88_t sq8x8_to_sq0x88(sq8x8_t sq8x8) {
   return sq8x8 + (sq8x8 & ~7);
 }
@@ -598,7 +600,7 @@ int is_double_check(const chess_state_t* chess_state);
 // returns true if the king is checked through a discovered attack
 int is_discover_check(const chess_state_t* chess_state);
 
-//
+// returns true if the position is check after the move is made
 int is_check_after_move(const chess_state_t* chess_state, move_t move);
 
 // returns the square of the checking piece, if there is no checking piece it
@@ -814,26 +816,56 @@ sq0x88_t forwards_ray_cast(const chess_state_t* chess_state, sq0x88_t from,
 
 void trace_ply_stack(const chess_state_t* chess_state);
 
+// for internal use only
+// initializes check when loading a position
 void init_check(chess_state_t* chess_state);
 
+// for internal use only
+// pushes data onto ply stack so it can be retrieved when unmaking moves
 void push_ply_stack(chess_state_t* chess_state, move_t move);
 
+// for internal use only
+// updates the pieces on the board
 void update_board(chess_state_t* chess_state, move_t move);
 
+// for internal use only
+// updates the castle rights after a move
 void update_rights(chess_state_t* chess_state, move_t move);
 
+// for internal use only
+// updates enpassent target
+// if move is a double pawn push sets enpassent target to the square the pawn skipped
 void update_enpassent_target(chess_state_t* chess_state, move_t move);
 
+// for internal use only
+// updates half move clock
+// sets it to 0 if move is irreversible
+// increments by 1 if it is reversible
 void update_half_move_clock(chess_state_t* chess_state, move_t move);
 
+// for internal use only
+// swaps whose turn it is
 void update_turn(chess_state_t* chess_state);
 
+// for internal use only
+// does incremental check to see if the position is check
 void update_check(chess_state_t* chess_state, move_t move);
 
+// for internal use only
+// removes a piece from a square
+// should NEVER be used on an empty square (will assert fail)
 void remove_piece(chess_state_t* chess_state, sq0x88_t target);
 
+// for internal use only
+// places a piece on a square
+// should NEVER be used to place an empty square (will assert fail)
 void place_piece(chess_state_t* chess_state, sq0x88_t target, piece_t piece);
 
+// for internal use only
+// moves a piece from `from` to `to`
+// should NEVER be used to move an empty square, and should never move to a non-empty square.
+// to capture a piece, first remove the piece, then move the capturing piece onto the square.
+// may assert fail if used improperly (i.e. moving an empty square)
 void move_piece(chess_state_t* chess_state, sq0x88_t from, sq0x88_t to);
 
 size_t knight_moves(const chess_state_t* chess_state, move_t* moves,
@@ -880,7 +912,12 @@ struct bot_term_cond_t;
 struct bot_t;
 struct worker_t;
 
-enum tt_entry_type { TT_EMPTY = 0, TT_EXACT, TT_UPPER, TT_LOWER };
+enum tt_entry_type { 
+  TT_EMPTY = 0, // slot is empty
+  TT_EXACT,     // slot is a pv node
+  TT_UPPER,     // slot failed low
+  TT_LOWER,     // slot failed high
+};
 
 // bitpacked data for transposition table entry
 // layout
@@ -1058,9 +1095,14 @@ void bestmove(move_t bestmove, move_t ponder);
 // add killer move to killer move list
 void add_killer_move(compact_move_t* killer_moves, move_t move);
 
+// gets the static exchange evaluation
+// returns positive if it is a winning exchange
+// returns negative if it is a losing exchange
+// returns zero if it is an even exchange
 centipawn_t static_exchange_evaluation(const chess_state_t* chess_state,
   move_t move);
 
+// gets the index in the butterfly board for move
 static inline int butterfly_index(move_t move) {
   int from = sq0x88_to_sq8x8(move.from);
   int to = sq0x88_to_sq8x8(move.to);
@@ -1086,6 +1128,7 @@ enum move_order_state {
   PRIORITY_QUIET_MOVE      = 0x000,
 };
 
+// stores move ordering and moves
 typedef struct move_list_t {
   move_t moves[256];
   size_t move_count;
@@ -1095,20 +1138,32 @@ typedef struct move_list_t {
   enum move_order_state state;
 } move_list_t;
 
+// initializes move list
 void init_move_list(const chess_state_t* position, move_list_t* move_list, move_t hash_move, compact_move_t* killer_moves, int16_t*,int16_t*);
+
+// gets next move from move list the move ordering rules
+// returns null_move when move list is exhausted
 move_t next_move(const chess_state_t* position, move_list_t* move_list);
+
+// gets next capture from move list the move ordering rules
+// returns null_move when all captures from move list are exhausted
 move_t next_capture(const chess_state_t* position, move_list_t* move_list);
 
 move_t entry_best_move(entry_t entry);
+
 centipawn_t entry_score(entry_t entry);
+
 enum tt_entry_type entry_type(entry_t entry);
+
 int entry_depth(entry_t entry);
+
 int entry_age(entry_t entry);
 
 entry_t make_entry(enum tt_entry_type type, move_t best_move, centipawn_t score,
                    int depth, int age);
 
 void tt_init(table_t* table, uint64_t capacity);
+
 void tt_free(table_t* table);
 
 entry_t tt_get(table_t* table, zobrist_t key);
@@ -1126,43 +1181,23 @@ void tt_store_depth_prefered(table_t* table, zobrist_t key,
 void tt_store_pv(table_t* table, zobrist_t key, enum tt_entry_type type,
                  move_t best_move, centipawn_t score, int depth, int age);
 
+// searches root position to fixed depth
 int      rootSearch(worker_t* worker, centipawn_t alpha, centipawn_t beta, int depth);
-centipawn_t abSearch(worker_t* worker, centipawn_t alpha, centipawn_t beta, int depth);
-centipawn_t  qSearch(worker_t* worker, centipawn_t alpha, centipawn_t beta, int depth);
 
+// implements pv search and nega-max
+centipawn_t abSearch(worker_t* worker, centipawn_t alpha, centipawn_t beta, int depth);
+
+// implements quiescence search with nega-max with check extensions
+centipawn_t  qSearch(worker_t* worker, centipawn_t alpha, centipawn_t beta, int depth);
 
 centipawn_t piece_value(sq0x88_t, piece_t piece);
 
 centipawn_t material_score(const chess_state_t*);
 
-/*
-
-score_centipawn_t mobility_score(const chess_state_t*);
-
-score_centipawn_t pawn_weakness_score(const chess_state_t*);
-
-score_centipawn_t static_evaluation(const chess_state_t*);
-
-
-
-score_centipawn_t board_value(const chess_state_t*, sq0x88_t);
-
-score_centipawn_t pawn_value(sq0x88_t square, piece_t colour);
-
-score_centipawn_t knight_value(sq0x88_t square, piece_t colour);
-
-score_centipawn_t bishop_value(sq0x88_t square, piece_t colour);
-
-score_centipawn_t rook_value(sq0x88_t square, piece_t colour);
-
-score_centipawn_t queen_value(sq0x88_t square, piece_t colour);
-
-score_centipawn_t king_value(sq0x88_t square, piece_t colour);
-*/
-
-
+// statically analyses position
 centipawn_t eval(const chess_state_t* position);
 
+// checks if position is either a threefold repetition or is a repetition within the search
 int is_repetition(const chess_state_t* position, int ply_of_root);
 
 static const centipawn_t king_square_table[64] = {
@@ -1231,7 +1266,7 @@ static const centipawn_t pawn_square_table[64] = {
 
 #define AUTHOR "Alex B"
 #define BOT_NAME "PieceMeal"
-#define BOT_VERSION "1.0.0"
+#define BOT_VERSION "1.2.0"
 
 #define UNIMPLEMENTED fprintf(stderr, "unimplemented\n")
 #define INVALIDARG(CMD) fprintf(stderr, "\"%.*s\" is not a valid argument for command \"%s\"\n", (arglen), (arg), (CMD))
@@ -1646,11 +1681,11 @@ int discover_enpassent_check_after_move(const chess_state_t* chess_state,
   return 1;
 }
 
-// initialize variables
-// if move is castle, check if moved rook is checking opposing king
-// check if the moved piece can move to the kingsquare
-// check if the moved piece was obstructing a sliding piece which is now
-// revealed
+// based on update check
+// we only check the pieces moved in the previous turn to see if they can attack the opposing king.
+// we must also check for discovered attacks that were blocked by the moved piece.
+// castle moves must also check if the moved rook can attack the opposing king.
+// there is additionally an edge case with enpassent reveal attacks that must be considered seperately.
 int is_check_after_move(const chess_state_t* chess_state, move_t move) {
   sq0x88_t king_square;
   if (chess_state->black_to_move) {
@@ -1733,6 +1768,7 @@ int is_check_after_move(const chess_state_t* chess_state, move_t move) {
   return 0;
 }
 
+// check for reveal attacks
 void update_discover_check(chess_state_t* chess_state, sq0x88_t king_square,
                            sq0x88_t revealing_piece_from,
                            sq0x88_t revealing_piece_to) {
@@ -1766,12 +1802,11 @@ void update_discover_check(chess_state_t* chess_state, sq0x88_t king_square,
   chess_state->discovered_check = 1;
 }
 
-// initialize variables
-// if move is castle, check if moved rook is checking opposing king
-// check if the moved piece can move to the kingsquare
-// check if the moved piece was obstructing a sliding piece which is now
-// revealed
-
+// update check is an incremental check procedure
+// we only check the pieces moved in the previous turn to see if they can attack the opposing king.
+// we must also check for discovered attacks that were blocked by the moved piece.
+// castle moves must also check if the moved rook can attack the opposing king.
+// there is additionally an edge case with enpassent reveal attacks that must be considered seperately.
 void update_check(chess_state_t* chess_state, move_t move) {
   sq0x88_t king_square;
   if (chess_state->black_to_move) {
@@ -1807,8 +1842,7 @@ void update_check(chess_state_t* chess_state, move_t move) {
     }
   }
   // if moved piece has bishop flag set, i.e. it is a bishop or queen
-  if (moved_piece &
-      BISHOP) {  // <- maybe should be an API for this to abstract it
+  if (moved_piece & BISHOP) {  // <- maybe should be an API for this to abstract it
     sq0x88_t inc = bishop_increment(to, king_square);
     if (inc && forwards_ray_cast(chess_state, to, inc) == king_square) {
       chess_state->check_square = to;
@@ -1841,6 +1875,7 @@ void update_check(chess_state_t* chess_state, move_t move) {
   // consider reveals
   update_discover_check(chess_state, king_square, from, to);
 
+  // enpassent reveals
   if (!chess_state->discovered_check && is_enpassent(move)) {
     update_discover_check(chess_state, king_square, to - pawn_inc, to);
   }
@@ -1850,6 +1885,10 @@ void update_check(chess_state_t* chess_state, move_t move) {
   }
 }
 
+// checks if the square can be attacked by colour
+// this procedure checks `backwards` to see if there is any piece that can attack the square
+// this is a slow procedure, but only needs to be used for is_legal checks for king moves
+// may be worth removing and replacing with an incremental approach that keeps track of which squares each player to pseudo legal attack
 int is_under_attack(const chess_state_t* chess_state, sq0x88_t square,
                     piece_t colour) {
   colour_t attacker = opposite_colour(colour);
@@ -2063,6 +2102,7 @@ zobrist_t zobrist_flip_turn(zobrist_t zobrist) {
 
 zobrist_t zobrist_flip_piece(zobrist_t zobrist, piece_t piece,
                              sq0x88_t square) {
+  // found using godbolt that this is more efficient than a switch (avoids code branching)
   const int8_t piece_to_zobrist_index_map[17] = {
     -1,
     0,
@@ -2089,6 +2129,7 @@ zobrist_t zobrist_flip_piece(zobrist_t zobrist, piece_t piece,
 
 zobrist_t zobrist_move_piece(zobrist_t zobrist, piece_t piece,
                              sq0x88_t from, sq0x88_t to) {
+  // found using godbolt that this is more efficient than a switch (avoids code branching)
   const int8_t piece_to_zobrist_index_map[17] = {
     -1,
     0,
@@ -3705,134 +3746,6 @@ void unmake_move(chess_state_t* chess_state) {
   }
 }
 
-// Expanded from src/chess/eval.c
-// Expanded from include/piece_square_tables.h
-#ifndef PIECE_SQUARE_TABLES_H
-#define PIECE_SQUARE_TABLES_H
-
-
-centipawn_t pawn_score_table[64] = {
-      0,   0,   0,   0,   0,   0,   0,   0,
-    100, 100,  75,  25,  25, 100, 100, 100,
-     50,  50,  50,  50,  50,  25,  50,  50,
-      0,   0,   0,  75,  75,  50,   0,   0,
-     50, -10, -10, 100, 100,  75, -10,  50,
-    100,  50,  50, 150, 150, 100,  50, 100,
-    250, 250, 250, 250, 250, 250, 250, 250,
-      0,   0,   0,   0,   0,   0,   0,   0,
-};
-
-centipawn_t knight_score_table[64] = {
-    -75, -50, -25, -25, -25, -25, -50, -75,
-    -50, -25,  25,  25,  25,  25, -25, -50,
-    -25,  25,  75,  75,  75,  75,  25, -25,
-    -25,  25,  75, 100, 100,  75,  25, -25,
-    -25,  25,  75, 100, 100,  75,  25, -25,
-    -25,  25,  75,  75,  75,  75,  25, -25,
-    -50, -25,  25,  25,  25,  25, -25, -50,
-    -75, -50, -25, -25, -25, -25, -50, -75,
-};
-
-centipawn_t bishop_score_table[64] = {
-  0
-};
-
-centipawn_t rook_score_table[64] = {
-  0
-};
-
-centipawn_t queen_score_table[64] = {
-  0
-};
-
-centipawn_t king_score_table[64] = {
-  0
-};
-
-#endif // PIECE_SQUARE_TABLES_H
-/*
-centipawn_t base_material_score(const chess_state_t* position) {
-  centipawn_t friendly_material =
-      position->friendly_pieces->pawn_count * PAWN_SCORE +
-      position->friendly_pieces->knight_count * KNIGHT_SCORE +
-      position->friendly_pieces->dark_bishop_count * BISHOP_SCORE +
-      position->friendly_pieces->light_bishop_count * BISHOP_SCORE +
-      position->friendly_pieces->rook_count * ROOK_SCORE +
-      position->friendly_pieces->queen_count * QUEEN_SCORE;
-  centipawn_t enemy_material =
-      position->enemy_pieces->pawn_count * PAWN_SCORE +
-      position->enemy_pieces->knight_count * KNIGHT_SCORE +
-      position->enemy_pieces->dark_bishop_count * BISHOP_SCORE +
-      position->enemy_pieces->light_bishop_count * BISHOP_SCORE +
-      position->enemy_pieces->rook_count * ROOK_SCORE +
-      position->enemy_pieces->queen_count * QUEEN_SCORE;
-  return friendly_material - enemy_material;
-}
-
-centipawn_t material_score(const chess_state_t* position) {
-  centipawn_t score = 0;
-  FOR_EACH_PIECE(&position->white_pieces, pawn, square) {
-    score += pawn_score_table[sq0x88_to_sq8x8(square)];
-  }
-  FOR_EACH_PIECE(&position->black_pieces, pawn, square) {
-    score -= pawn_score_table[sq0x88_to_sq8x8(square) ^ 56];
-  }
-  FOR_EACH_PIECE(&position->white_pieces, knight, square) {
-    score += knight_score_table[sq0x88_to_sq8x8(square)];
-  }
-  FOR_EACH_PIECE(&position->black_pieces, knight, square) {
-    score -= knight_score_table[sq0x88_to_sq8x8(square) ^ 56];
-  }
-  FOR_EACH_PIECE(&position->white_pieces, light_bishop, square) {
-    score += bishop_score_table[sq0x88_to_sq8x8(square)];
-  }
-  FOR_EACH_PIECE(&position->black_pieces, light_bishop, square) {
-    score -= bishop_score_table[sq0x88_to_sq8x8(square) ^ 56];
-  }
-  FOR_EACH_PIECE(&position->white_pieces, dark_bishop, square) {
-    score += bishop_score_table[sq0x88_to_sq8x8(square)];
-  }
-  FOR_EACH_PIECE(&position->black_pieces, dark_bishop, square) {
-    score -= bishop_score_table[sq0x88_to_sq8x8(square) ^ 56];
-  }
-  FOR_EACH_PIECE(&position->white_pieces, rook, square) {
-    score += rook_score_table[sq0x88_to_sq8x8(square)];
-  }
-  FOR_EACH_PIECE(&position->black_pieces, rook, square) {
-    score -= rook_score_table[sq0x88_to_sq8x8(square) ^ 56];
-  }
-  FOR_EACH_PIECE(&position->white_pieces, queen, square) {
-    score += queen_score_table[sq0x88_to_sq8x8(square)];
-  }
-  FOR_EACH_PIECE(&position->black_pieces, queen, square) {
-    score -= queen_score_table[sq0x88_to_sq8x8(square) ^ 56];
-  }
-  score += king_score_table[sq0x88_to_sq8x8(position->white_pieces.king_square)];
-  score -= king_score_table[sq0x88_to_sq8x8(position->black_pieces.king_square) ^ 56];
-  score = position->black_to_move ? -score : score;
-  return score + base_material_score(position);
-}
-
-#define MOBILITY_SCORE_MULTIPLIER 1 / 10
-
-centipawn_t mobility_score(const chess_state_t* position) {
-  move_t buffer[256];
-  size_t friendly_move_count =
-      generate_legal_moves(position, buffer, position->friendly_colour);
-  size_t enemy_move_count =
-      generate_legal_moves(position, buffer, position->enemy_colour);
-  return (enemy_move_count - friendly_move_count) * MOBILITY_SCORE_MULTIPLIER;
-}
-
-centipawn_t pseudo_mobility_score(const chess_state_t* position) {
-  move_t buffer[256];
-  size_t friendly_move_count =
-      generate_moves(position, buffer, position->friendly_colour);
-  size_t enemy_move_count =
-      generate_moves(position, buffer, position->enemy_colour);
-  return (enemy_move_count - friendly_move_count) * MOBILITY_SCORE_MULTIPLIER;
-}
-  */
 // Expanded from src/chess/notation.c
 #include <ctype.h>
 #include <stdio.h>
