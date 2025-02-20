@@ -5,8 +5,8 @@
 
 #include <stdlib.h>
 
-#include "../include/chess.h"
-#include "../include/increments.h"
+#include "../../include/chess.h"
+#include "../../include/increments.h"
 
 // todo
 // make piece list base move generation functions i.e. size_t

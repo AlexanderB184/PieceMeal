@@ -26,19 +26,19 @@ centipawn_t knight_score_table[64] = {
 };
 
 centipawn_t bishop_score_table[64] = {
-
+  0
 };
 
 centipawn_t rook_score_table[64] = {
-
+  0
 };
 
 centipawn_t queen_score_table[64] = {
-
+  0
 };
 
 centipawn_t king_score_table[64] = {
-
+  0
 };
 
 #endif // PIECE_SQUARE_TABLES_H

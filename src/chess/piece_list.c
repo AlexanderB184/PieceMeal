@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "../include/chess.h"
+#include "../../include/chess.h"
 
 void remove_piece(chess_state_t* chess_state, sq0x88_t target) {
   piece_t piece = chess_state->board[target];

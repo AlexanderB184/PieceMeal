@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/chess.h"
+#include "../../include/chess.h"
 
 long skip_whitespace(const char* buffer) {
   long bytes_read = 0;

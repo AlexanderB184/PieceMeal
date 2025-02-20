@@ -1,7 +1,7 @@
 
 #include <stdio.h>
 
-#include "../include/chess.h"
+#include "../../include/chess.h"
 
 int discover_check_after_move(const chess_state_t* chess_state,
                               sq0x88_t king_square,

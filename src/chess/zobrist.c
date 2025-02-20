@@ -1,5 +1,5 @@
-#include "../include/chess.h"
-#include "../include/zobrist.h"
+#include "../../include/chess.h"
+#include "../../include/zobrist.h"
 
 zobrist_t zobrist_flip_turn(zobrist_t zobrist) {
   return zobrist ^ zobrist_black_to_move;
@@ -56,4 +56,5 @@ zobrist_t zobrist_move_piece(zobrist_t zobrist, piece_t piece,
   int from_index = sq0x88_to_sq8x8(from);
   int to_index = sq0x88_to_sq8x8(to);
   return zobrist ^ zobrist_table[piece_index][from_index] ^ zobrist_table[piece_index][to_index];
+
 }

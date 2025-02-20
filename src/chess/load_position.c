@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/chess.h"
+#include "../../include/chess.h"
 
 static const piece_t empty_board[RANK_SIZE * FILE_SIZE] = {
     EMPTY,  EMPTY,  EMPTY,  EMPTY,  EMPTY,  EMPTY,  EMPTY,  EMPTY,  BORDER,

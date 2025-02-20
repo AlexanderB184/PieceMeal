@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 cmake_policy(SET CMP0048 NEW)
 
+
+
 project(PieceMeal VERSION 1.1.0)
 
-add_library(chess SHARED PieceMeal.c include/chess.h)
+add_library(chess SHARED PieceMealLib.c include/chess.h)
 
 add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 add_compile_options(-O3)
@@ -22,6 +24,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(catch2)
 
+add_executable(PieceMeal PieceMealBot.c)
 add_executable(test_perft tests/perft.cpp)
 add_executable(test_is_check tests/is_check.cpp)
 add_executable(test_is_pseudo_legal tests/pseudo_legal.cpp)
@@ -44,6 +47,7 @@ target_link_libraries(test_fuzz_notation PRIVATE Catch2::Catch2WithMain chess)
 target_link_libraries(test_gameover PRIVATE Catch2::Catch2WithMain chess)
 target_link_libraries(alphaBeta PRIVATE chess)
 target_link_libraries(profTest PRIVATE chess)
+target_link_libraries(PieceMeal PRIVATE pthread)
 
 include(CTest)
 include(Catch)

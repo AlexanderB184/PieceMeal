@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../include/chess.h"
+#include "../../include/chess.h"
 
 int is_pinned(const chess_state_t* chess_state, move_t move, colour_t colour) {
   sq0x88_t from = get_from(move);

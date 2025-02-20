@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/chess.h"
+#include "../../include/chess.h"
 
 void push_ply_stack(chess_state_t* chess_state, move_t move) {
   if (chess_state->ply_counter >= chess_state->ply_stack_capacity) {

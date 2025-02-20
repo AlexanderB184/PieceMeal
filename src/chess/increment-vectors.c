@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
-#include "../include/chess.h"
-#include "../include/increments.h"
+#include "../../include/chess.h"
+#include "../../include/increments.h"
 
 sq0x88_t queen_increment(sq0x88_t from, sq0x88_t to) {
   return queen_increment_vector[diff_0x88(to, from)];

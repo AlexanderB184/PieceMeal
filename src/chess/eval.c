@@ -1,6 +1,6 @@
-#include "../include/chess.h"
-#include "../include/piece_square_tables.h"
-
+#include "../../include/chess.h"
+#include "../../include/piece_square_tables.h"
+/*
 centipawn_t base_material_score(const chess_state_t* position) {
   centipawn_t friendly_material =
       position->friendly_pieces->pawn_count * PAWN_SCORE +
@@ -82,3 +82,4 @@ centipawn_t pseudo_mobility_score(const chess_state_t* position) {
       generate_moves(position, buffer, position->enemy_colour);
   return (enemy_move_count - friendly_move_count) * MOBILITY_SCORE_MULTIPLIER;
 }
+  */
