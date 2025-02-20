@@ -1,8 +1,7 @@
 package PieceMeal
 
 // #cgo CFLAGS: -Wall -Wextra -Werror -O3 -DDEBUG -I../../include
-// #include "../../include/chess.h"
-// #include "../../PieceMeal.c"
+// #include "../../PieceMealLib.c"
 import "C"
 
 // The key functionality from PieceMeal ported into golang!
