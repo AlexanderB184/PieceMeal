@@ -5,14 +5,38 @@
 
 #include "../../include/chess.h"
 
-long skip_whitespace(const char* buffer) {
-  long bytes_read = 0;
-  while (buffer[bytes_read] == ' ' || buffer[bytes_read] == '\t' ||
-         buffer[bytes_read] == '\n' || buffer[bytes_read] == '\r') {
-    bytes_read++;
+#ifdef DEBUG
+#define PRINT_READ_ERRORS
+#define PRINT_WRITE_ERRORS
+#endif
+
+#ifdef PRINT_READ_ERRORS
+#define READ_ERROR(msg, ...)                                \
+  {                                                         \
+    fprintf(stderr, "READ ERROR: reading \"%s\" ", buffer); \
+    fprintf(stderr, msg, ##__VA_ARGS__);                    \
+    return -1;                                              \
   }
-  return bytes_read;
-}
+#else
+#define READ_ERROR(msg, ...) \
+  { return -1; }
+#endif
+
+#ifdef PRINT_WRITE_ERRORS
+#define WRITE_ERROR(msg, ...)         \
+  {                                   \
+    fprintf(stderr, "WRITE ERROR: "); \
+    printf(msg, ##__VA_ARGS__);       \
+    buffer[0] = 0;                    \
+    return -1;                        \
+  }
+#else
+#define WRITE_ERROR(msg, ...) \
+  {                           \
+    buffer[0] = 0;            \
+    return -1;                \
+  }
+#endif
 
 int is_file(char c) { return c >= 'a' && c <= 'h'; }
 

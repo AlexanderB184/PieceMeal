@@ -5,6 +5,49 @@
 
 #include "../../include/chess.h"
 
+#ifdef DEBUG
+#define PRINT_READ_ERRORS
+#define PRINT_WRITE_ERRORS
+#endif
+
+#ifdef PRINT_READ_ERRORS
+#define READ_ERROR(msg, ...)                                \
+  {                                                         \
+    fprintf(stderr, "READ ERROR: reading \"%s\" ", buffer); \
+    fprintf(stderr, msg, ##__VA_ARGS__);                    \
+    return -1;                                              \
+  }
+#else
+#define READ_ERROR(msg, ...) \
+  { return -1; }
+#endif
+
+#ifdef PRINT_WRITE_ERRORS
+#define WRITE_ERROR(msg, ...)         \
+  {                                   \
+    fprintf(stderr, "WRITE ERROR: "); \
+    printf(msg, ##__VA_ARGS__);       \
+    buffer[0] = 0;                    \
+    return -1;                        \
+  }
+#else
+#define WRITE_ERROR(msg, ...) \
+  {                           \
+    buffer[0] = 0;            \
+    return -1;                \
+  }
+#endif
+
+long skip_whitespace_internal(const char* buffer) {
+  long bytes_read = 0;
+  while (buffer[bytes_read] == ' ' || buffer[bytes_read] == '\t' ||
+         buffer[bytes_read] == '\n' || buffer[bytes_read] == '\r') {
+    bytes_read++;
+  }
+  return bytes_read;
+}
+
+
 static const piece_t empty_board[RANK_SIZE * FILE_SIZE] = {
     EMPTY,  EMPTY,  EMPTY,  EMPTY,  EMPTY,  EMPTY,  EMPTY,  EMPTY,  BORDER,
     BORDER, BORDER, BORDER, BORDER, BORDER, BORDER, BORDER, EMPTY,  EMPTY,
@@ -150,7 +193,7 @@ long load_position(chess_state_t* chess_state, const char* buffer) {
     }
   }
 
-  bytes_read += skip_whitespace(buffer + bytes_read);
+  bytes_read += skip_whitespace_internal(buffer + bytes_read);
 
   // next to move
   if (buffer[bytes_read] == '\0' || bytes_read >= size) {
@@ -169,7 +212,7 @@ long load_position(chess_state_t* chess_state, const char* buffer) {
           who2move);
   }
 
-  bytes_read += skip_whitespace(buffer + bytes_read);
+  bytes_read += skip_whitespace_internal(buffer + bytes_read);
   // castle rights
   if (buffer[bytes_read] == '\0' || bytes_read >= size) {
     READ_ERROR("fen missing castle rights.\n");
@@ -197,7 +240,7 @@ long load_position(chess_state_t* chess_state, const char* buffer) {
     }
   }
 
-  bytes_read += skip_whitespace(buffer + bytes_read);
+  bytes_read += skip_whitespace_internal(buffer + bytes_read);
 
   // en passent
   if (buffer[bytes_read] == '\0' || bytes_read >= size) {
@@ -218,7 +261,7 @@ long load_position(chess_state_t* chess_state, const char* buffer) {
     }
   }
 
-  bytes_read += skip_whitespace(buffer + bytes_read);
+  bytes_read += skip_whitespace_internal(buffer + bytes_read);
   // everything past here is optional
 
   // half move clock
@@ -231,7 +274,7 @@ long load_position(chess_state_t* chess_state, const char* buffer) {
       bytes_read++;
     }
     chess_state->half_move_clock = half_move_clock;
-    bytes_read += skip_whitespace(buffer + bytes_read);
+    bytes_read += skip_whitespace_internal(buffer + bytes_read);
   }
 
   // full move counter

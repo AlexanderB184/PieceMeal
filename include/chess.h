@@ -17,14 +17,12 @@ extern "C" {
 #define MAXSCORE ((centipawn_t)(INT16_MAX))
 #define MINSCORE ((centipawn_t)(-INT16_MAX))
 
-#define PAWN_SCORE ((centipawn_t)(100))
+#define PAWN_SCORE   ((centipawn_t)(100))
 #define KNIGHT_SCORE ((centipawn_t)(320))
 #define BISHOP_SCORE ((centipawn_t)(330))
-#define ROOK_SCORE ((centipawn_t)(500))
-#define QUEEN_SCORE ((centipawn_t)(900))
-#define KING_SCORE                                                      \
-  ((centipawn_t)(KNIGHT_SCORE * 2 + BISHOP_SCORE * 2 + ROOK_SCORE * 2 + \
-                 QUEEN_SCORE * 9))
+#define ROOK_SCORE   ((centipawn_t)(500))
+#define QUEEN_SCORE  ((centipawn_t)(900))
+#define KING_SCORE   ((centipawn_t)(14400))
 #define CHECKMATE_SCORE ((centipawn_t)(-16000))
 #define DRAW_SCORE ((centipawn_t)(0))
 
@@ -35,39 +33,6 @@ extern "C" {
   for (uint8_t index = 0, IDENTIFIER = (PIECE_LIST)->PIECE_TYPE##_list[index]; \
        index < (PIECE_LIST)->PIECE_TYPE##_count;                               \
        index++, IDENTIFIER = (PIECE_LIST)->PIECE_TYPE##_list[index])
-
-#ifdef DEBUG
-#define PRINT_READ_ERRORS
-#define PRINT_WRITE_ERRORS
-#endif
-
-#ifdef PRINT_READ_ERRORS
-#define READ_ERROR(msg, ...)                                \
-  {                                                         \
-    fprintf(stderr, "READ ERROR: reading \"%s\" ", buffer); \
-    fprintf(stderr, msg, ##__VA_ARGS__);                    \
-    return -1;                                              \
-  }
-#else
-#define READ_ERROR(msg, ...) \
-  { return -1; }
-#endif
-
-#ifdef PRINT_WRITE_ERRORS
-#define WRITE_ERROR(msg, ...)         \
-  {                                   \
-    fprintf(stderr, "WRITE ERROR: "); \
-    printf(msg, ##__VA_ARGS__);       \
-    buffer[0] = 0;                    \
-    return -1;                        \
-  }
-#else
-#define WRITE_ERROR(msg, ...) \
-  {                           \
-    buffer[0] = 0;            \
-    return -1;                \
-  }
-#endif
 
 // coordinates stored in 0x88 format
 // upper nibble represents the rank
@@ -264,6 +229,7 @@ typedef struct {
   uint8_t indices_list[64];
 } piece_list_t;
 
+
 typedef struct move_t {
   sq0x88_t from, to;
   uint16_t priority_and_flags;
@@ -451,9 +417,11 @@ static inline rank07_t backrank(colour_t colour) {
 
 // coordinate conversion funcitons
 
+// convert from 0x88 representation to board index
 static inline sq8x8_t sq0x88_to_sq8x8(sq0x88_t sq0x88) {
   return (sq0x88 + (sq0x88 & 7)) >> 1;
 }
+// convert from board index to 0x88 representation
 static inline sq0x88_t sq8x8_to_sq0x88(sq8x8_t sq8x8) {
   return sq8x8 + (sq8x8 & ~7);
 }
@@ -586,7 +554,7 @@ int is_double_check(const chess_state_t* chess_state);
 // returns true if the king is checked through a discovered attack
 int is_discover_check(const chess_state_t* chess_state);
 
-//
+// returns true if the position is check after the move is made
 int is_check_after_move(const chess_state_t* chess_state, move_t move);
 
 // returns the square of the checking piece, if there is no checking piece it
@@ -601,7 +569,7 @@ int can_castle_king_side(const chess_state_t* chess_state, colour_t colour);
 int can_castle_queen_side(const chess_state_t* chess_state, colour_t colour);
 
 // returns index of first non white space character
-long skip_whitespace(const char* buffer);
+long skip_whitespace_internal(const char* buffer);
 
 // writes a square in format file rank, e.g. a1, h4, c8
 long write_square(char* buffer, long buffer_size, sq0x88_t square);
@@ -802,26 +770,56 @@ sq0x88_t forwards_ray_cast(const chess_state_t* chess_state, sq0x88_t from,
 
 void trace_ply_stack(const chess_state_t* chess_state);
 
+// for internal use only
+// initializes check when loading a position
 void init_check(chess_state_t* chess_state);
 
+// for internal use only
+// pushes data onto ply stack so it can be retrieved when unmaking moves
 void push_ply_stack(chess_state_t* chess_state, move_t move);
 
+// for internal use only
+// updates the pieces on the board
 void update_board(chess_state_t* chess_state, move_t move);
 
+// for internal use only
+// updates the castle rights after a move
 void update_rights(chess_state_t* chess_state, move_t move);
 
+// for internal use only
+// updates enpassent target
+// if move is a double pawn push sets enpassent target to the square the pawn skipped
 void update_enpassent_target(chess_state_t* chess_state, move_t move);
 
+// for internal use only
+// updates half move clock
+// sets it to 0 if move is irreversible
+// increments by 1 if it is reversible
 void update_half_move_clock(chess_state_t* chess_state, move_t move);
 
+// for internal use only
+// swaps whose turn it is
 void update_turn(chess_state_t* chess_state);
 
+// for internal use only
+// does incremental check to see if the position is check
 void update_check(chess_state_t* chess_state, move_t move);
 
+// for internal use only
+// removes a piece from a square
+// should NEVER be used on an empty square (will assert fail)
 void remove_piece(chess_state_t* chess_state, sq0x88_t target);
 
+// for internal use only
+// places a piece on a square
+// should NEVER be used to place an empty square (will assert fail)
 void place_piece(chess_state_t* chess_state, sq0x88_t target, piece_t piece);
 
+// for internal use only
+// moves a piece from `from` to `to`
+// should NEVER be used to move an empty square, and should never move to a non-empty square.
+// to capture a piece, first remove the piece, then move the capturing piece onto the square.
+// may assert fail if used improperly (i.e. moving an empty square)
 void move_piece(chess_state_t* chess_state, sq0x88_t from, sq0x88_t to);
 
 size_t knight_moves(const chess_state_t* chess_state, move_t* moves,

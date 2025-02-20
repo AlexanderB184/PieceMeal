@@ -7,6 +7,7 @@ zobrist_t zobrist_flip_turn(zobrist_t zobrist) {
 
 zobrist_t zobrist_flip_piece(zobrist_t zobrist, piece_t piece,
                              sq0x88_t square) {
+  // found using godbolt that this is more efficient than a switch (avoids code branching)
   const int8_t piece_to_zobrist_index_map[17] = {
     -1,
     0,
@@ -33,6 +34,7 @@ zobrist_t zobrist_flip_piece(zobrist_t zobrist, piece_t piece,
 
 zobrist_t zobrist_move_piece(zobrist_t zobrist, piece_t piece,
                              sq0x88_t from, sq0x88_t to) {
+  // found using godbolt that this is more efficient than a switch (avoids code branching)
   const int8_t piece_to_zobrist_index_map[17] = {
     -1,
     0,

@@ -22,7 +22,12 @@ struct bot_term_cond_t;
 struct bot_t;
 struct worker_t;
 
-enum tt_entry_type { TT_EMPTY = 0, TT_EXACT, TT_UPPER, TT_LOWER };
+enum tt_entry_type { 
+  TT_EMPTY = 0, // slot is empty
+  TT_EXACT,     // slot is a pv node
+  TT_UPPER,     // slot failed low
+  TT_LOWER,     // slot failed high
+};
 
 // bitpacked data for transposition table entry
 // layout
@@ -200,9 +205,14 @@ void bestmove(move_t bestmove, move_t ponder);
 // add killer move to killer move list
 void add_killer_move(compact_move_t* killer_moves, move_t move);
 
+// gets the static exchange evaluation
+// returns positive if it is a winning exchange
+// returns negative if it is a losing exchange
+// returns zero if it is an even exchange
 centipawn_t static_exchange_evaluation(const chess_state_t* chess_state,
   move_t move);
 
+// gets the index in the butterfly board for move
 static inline int butterfly_index(move_t move) {
   int from = sq0x88_to_sq8x8(move.from);
   int to = sq0x88_to_sq8x8(move.to);
@@ -228,6 +238,7 @@ enum move_order_state {
   PRIORITY_QUIET_MOVE      = 0x000,
 };
 
+// stores move ordering and moves
 typedef struct move_list_t {
   move_t moves[256];
   size_t move_count;
@@ -237,20 +248,32 @@ typedef struct move_list_t {
   enum move_order_state state;
 } move_list_t;
 
+// initializes move list
 void init_move_list(const chess_state_t* position, move_list_t* move_list, move_t hash_move, compact_move_t* killer_moves, int16_t*,int16_t*);
+
+// gets next move from move list the move ordering rules
+// returns null_move when move list is exhausted
 move_t next_move(const chess_state_t* position, move_list_t* move_list);
+
+// gets next capture from move list the move ordering rules
+// returns null_move when all captures from move list are exhausted
 move_t next_capture(const chess_state_t* position, move_list_t* move_list);
 
 move_t entry_best_move(entry_t entry);
+
 centipawn_t entry_score(entry_t entry);
+
 enum tt_entry_type entry_type(entry_t entry);
+
 int entry_depth(entry_t entry);
+
 int entry_age(entry_t entry);
 
 entry_t make_entry(enum tt_entry_type type, move_t best_move, centipawn_t score,
                    int depth, int age);
 
 void tt_init(table_t* table, uint64_t capacity);
+
 void tt_free(table_t* table);
 
 entry_t tt_get(table_t* table, zobrist_t key);
@@ -268,43 +291,23 @@ void tt_store_depth_prefered(table_t* table, zobrist_t key,
 void tt_store_pv(table_t* table, zobrist_t key, enum tt_entry_type type,
                  move_t best_move, centipawn_t score, int depth, int age);
 
+// searches root position to fixed depth
 int      rootSearch(worker_t* worker, centipawn_t alpha, centipawn_t beta, int depth);
-centipawn_t abSearch(worker_t* worker, centipawn_t alpha, centipawn_t beta, int depth);
-centipawn_t  qSearch(worker_t* worker, centipawn_t alpha, centipawn_t beta, int depth);
 
+// implements pv search and nega-max
+centipawn_t abSearch(worker_t* worker, centipawn_t alpha, centipawn_t beta, int depth);
+
+// implements quiescence search with nega-max with check extensions
+centipawn_t  qSearch(worker_t* worker, centipawn_t alpha, centipawn_t beta, int depth);
 
 centipawn_t piece_value(sq0x88_t, piece_t piece);
 
 centipawn_t material_score(const chess_state_t*);
 
-/*
-
-score_centipawn_t mobility_score(const chess_state_t*);
-
-score_centipawn_t pawn_weakness_score(const chess_state_t*);
-
-score_centipawn_t static_evaluation(const chess_state_t*);
-
-
-
-score_centipawn_t board_value(const chess_state_t*, sq0x88_t);
-
-score_centipawn_t pawn_value(sq0x88_t square, piece_t colour);
-
-score_centipawn_t knight_value(sq0x88_t square, piece_t colour);
-
-score_centipawn_t bishop_value(sq0x88_t square, piece_t colour);
-
-score_centipawn_t rook_value(sq0x88_t square, piece_t colour);
-
-score_centipawn_t queen_value(sq0x88_t square, piece_t colour);
-
-score_centipawn_t king_value(sq0x88_t square, piece_t colour);
-*/
-
-
+// statically analyses position
 centipawn_t eval(const chess_state_t* position);
 
+// checks if position is either a threefold repetition or is a repetition within the search
 int is_repetition(const chess_state_t* position, int ply_of_root);
 
 static const centipawn_t king_square_table[64] = {

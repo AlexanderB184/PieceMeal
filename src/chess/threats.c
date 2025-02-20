@@ -75,11 +75,11 @@ int discover_enpassent_check_after_move(const chess_state_t* chess_state,
   return 1;
 }
 
-// initialize variables
-// if move is castle, check if moved rook is checking opposing king
-// check if the moved piece can move to the kingsquare
-// check if the moved piece was obstructing a sliding piece which is now
-// revealed
+// based on update check
+// we only check the pieces moved in the previous turn to see if they can attack the opposing king.
+// we must also check for discovered attacks that were blocked by the moved piece.
+// castle moves must also check if the moved rook can attack the opposing king.
+// there is additionally an edge case with enpassent reveal attacks that must be considered seperately.
 int is_check_after_move(const chess_state_t* chess_state, move_t move) {
   sq0x88_t king_square;
   if (chess_state->black_to_move) {
@@ -162,6 +162,7 @@ int is_check_after_move(const chess_state_t* chess_state, move_t move) {
   return 0;
 }
 
+// check for reveal attacks
 void update_discover_check(chess_state_t* chess_state, sq0x88_t king_square,
                            sq0x88_t revealing_piece_from,
                            sq0x88_t revealing_piece_to) {
@@ -195,12 +196,11 @@ void update_discover_check(chess_state_t* chess_state, sq0x88_t king_square,
   chess_state->discovered_check = 1;
 }
 
-// initialize variables
-// if move is castle, check if moved rook is checking opposing king
-// check if the moved piece can move to the kingsquare
-// check if the moved piece was obstructing a sliding piece which is now
-// revealed
-
+// update check is an incremental check procedure
+// we only check the pieces moved in the previous turn to see if they can attack the opposing king.
+// we must also check for discovered attacks that were blocked by the moved piece.
+// castle moves must also check if the moved rook can attack the opposing king.
+// there is additionally an edge case with enpassent reveal attacks that must be considered seperately.
 void update_check(chess_state_t* chess_state, move_t move) {
   sq0x88_t king_square;
   if (chess_state->black_to_move) {
@@ -236,8 +236,7 @@ void update_check(chess_state_t* chess_state, move_t move) {
     }
   }
   // if moved piece has bishop flag set, i.e. it is a bishop or queen
-  if (moved_piece &
-      BISHOP) {  // <- maybe should be an API for this to abstract it
+  if (moved_piece & BISHOP) {  // <- maybe should be an API for this to abstract it
     sq0x88_t inc = bishop_increment(to, king_square);
     if (inc && forwards_ray_cast(chess_state, to, inc) == king_square) {
       chess_state->check_square = to;
@@ -270,6 +269,7 @@ void update_check(chess_state_t* chess_state, move_t move) {
   // consider reveals
   update_discover_check(chess_state, king_square, from, to);
 
+  // enpassent reveals
   if (!chess_state->discovered_check && is_enpassent(move)) {
     update_discover_check(chess_state, king_square, to - pawn_inc, to);
   }
@@ -279,6 +279,10 @@ void update_check(chess_state_t* chess_state, move_t move) {
   }
 }
 
+// checks if the square can be attacked by colour
+// this procedure checks `backwards` to see if there is any piece that can attack the square
+// this is a slow procedure, but only needs to be used for is_legal checks for king moves
+// may be worth removing and replacing with an incremental approach that keeps track of which squares each player to pseudo legal attack
 int is_under_attack(const chess_state_t* chess_state, sq0x88_t square,
                     piece_t colour) {
   colour_t attacker = opposite_colour(colour);
