@@ -105,12 +105,20 @@ const (
 	QUEEN_CAPTURE_PROMOTION  = PROMOTION | CAPTURE | QUEEN_PROMOTE_TO
 )
 
-func (chessState *ChessState) MakeMove(move Move) {
+func (chessState *ChessState) MakeMove(move Move) error {
+	if !chessState.IsLegalMove(move) {
+		return fmt.Errorf("illegal move")
+	}
 	C.make_move((*C.chess_state_t)(chessState), C.move_t(move))
+	return nil
 }
 
-func (chessState *ChessState) UnmakeMove() {
+func (chessState *ChessState) UnmakeMove() error {
+	if chessState.Ply() == 0 {
+		return fmt.Errorf("cannot unmake from start position")
+	}
 	C.unmake_move((*C.chess_state_t)(chessState))
+	return nil
 }
 
 func (chessState *ChessState) IsLegalMove(move Move) bool {
@@ -120,7 +128,7 @@ func (chessState *ChessState) IsLegalMove(move Move) bool {
 	return C.is_legal((*C.chess_state_t)(chessState), C.move_t(move)) != 0
 }
 
-func (square *Square) String() string {
+func (square *Square) Format() string {
 	buffer := [3]C.char{0, 0, 0}
 	out := C.write_square((*C.char)(unsafe.Pointer(&buffer[0])), 3, C.sq0x88_t(*square))
 	if out == -1 {
@@ -129,7 +137,7 @@ func (square *Square) String() string {
 	return C.GoString(&buffer[0])
 }
 
-func (piece *Piece) String() string {
+func (piece *Piece) Format() string {
 	buffer := [8]C.char{}
 	out := C.write_piece((*C.char)(unsafe.Pointer(&buffer[0])), 8, C.piece_t(*piece))
 	if out == -1 {
@@ -138,7 +146,7 @@ func (piece *Piece) String() string {
 	return C.GoString(&buffer[0])
 }
 
-func (move *Move) String() string {
+func (move *Move) LongAlgebraicNotation() string {
 	buffer := [8]C.char{}
 	out := C.write_long_algebraic_notation((*C.char)(unsafe.Pointer(&buffer[0])), 8, C.move_t(*move))
 	if out == -1 {
@@ -147,7 +155,7 @@ func (move *Move) String() string {
 	return C.GoString(&buffer[0])
 }
 
-func (cs *ChessState) String() string {
+func (cs *ChessState) Fen() string {
 	buffer := [1024]C.char{}
 	out := C.save_position((*C.chess_state_t)(cs), (*C.char)(unsafe.Pointer(&buffer[0])), 1024)
 	if out == -1 {
@@ -156,14 +164,21 @@ func (cs *ChessState) String() string {
 	return C.GoString(&buffer[0])
 }
 
+func allocGame() *ChessState {
+	const n = unsafe.Sizeof(C.chess_state_t{})
+	p := C.malloc(C.ulong(n))
+	C.clear_position((*C.chess_state_t)(p))
+	return (*ChessState)(p)
+}
+
 func NewGame() *ChessState {
-	cs := &ChessState{}
+	cs := allocGame()
 	C.load_start_position((*C.chess_state_t)(cs))
 	return cs
 }
 
 func LoadGame(fen string) (*ChessState, error) {
-	cs := &ChessState{}
+	cs := allocGame()
 
 	cfen := C.CString(fen)
 	defer C.free(unsafe.Pointer(cfen))
@@ -185,6 +200,7 @@ func (chessState *ChessState) Clone() *ChessState {
 func (cs *ChessState) free() {
 	if cs != nil {
 		C.release_position((*C.chess_state_t)(cs))
+		C.free(unsafe.Pointer(cs))
 	}
 }
 
@@ -305,6 +321,19 @@ func (cs *ChessState) ReadMove(reader io.ByteReader) (Move, error) {
 	return move, nil
 }
 
+func (cs *ChessState) ParseMove(buffer []byte) (move Move, bytesRead int, err error) {
+
+	cbuffer := (*C.char)(unsafe.Pointer(&buffer[0]))
+	buflen := len(buffer)
+	bytesRead = int(C.read_long_algebraic_notation(cbuffer, C.long(buflen), (*C.chess_state_t)(cs), (*C.move_t)(&move)))
+
+	if bytesRead == -1 {
+		return move, 0, fmt.Errorf("invalid move notation")
+	}
+
+	return move, bytesRead, nil
+}
+
 func (move *Move) IsCapture() bool {
 	return (int(C.get_flags(*(*C.move_t)(move))) & CAPTURE) != 0
 }
@@ -354,6 +383,18 @@ func (cs *ChessState) IsDoubleCheck() bool {
 
 func (cs *ChessState) Turn() int {
 	return int(cs.ply_counter)/2 + 1
+}
+
+func (cs *ChessState) Ply() int {
+	return int(cs.ply_counter)
+}
+
+func (cs *ChessState) WhoToMove() Colour {
+	if cs.black_to_move == 0 {
+		return WHITE
+	} else {
+		return BLACK
+	}
 }
 
 func (cs *ChessState) BlackToMove() bool {
