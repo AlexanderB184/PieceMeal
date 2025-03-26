@@ -3,6 +3,7 @@
 *.so
 *.dll
 *.out
+callgrind.out.*
 *.bin
 
 __pycache__
