@@ -249,7 +249,7 @@ size_t pawn_captures(const chess_state_t* chess_state, move_t* moves,
   sq0x88_t inc = pawn_push_increment(colour);
   colour_t enemy_colour = opposite_colour(colour);
   sq0x88_t to = from + inc;
-  if (is_promoting(from, colour)) {
+  if (sq0x88_to_rank07(to) == backrank(colour)) {
     return move_count;
   }
   to = from + inc + 1;
@@ -269,7 +269,7 @@ size_t pawn_quiets(const chess_state_t* chess_state, move_t* moves,
   // if is promoting
   sq0x88_t inc = pawn_push_increment(colour);
   sq0x88_t to = from + inc;
-  if (is_promoting(from, colour)) {
+  if (sq0x88_to_rank07(to) == backrank(colour)) {
     return move_count;
   }
   if (!off_the_board(to) && piece(chess_state, to) == EMPTY) {
@@ -291,7 +291,7 @@ size_t pawn_promotions(const chess_state_t* chess_state, move_t* moves,
   sq0x88_t inc = pawn_push_increment(colour);
   colour_t enemy_colour = opposite_colour(colour);
   sq0x88_t to = from + inc;
-  if (!is_promoting(from, colour)) {
+  if (sq0x88_to_rank07(to) != backrank(colour)) {
     return move_count;
   }
   if (piece(chess_state, to) == EMPTY) {
@@ -576,7 +576,7 @@ size_t generate_promotion_captures_of(const chess_state_t* chess_state,
                                       move_t* moves, size_t move_count,
                                       colour_t colour, sq0x88_t target) {
   // const piece_list_t* piece_lists = get_piece_list(chess_state, colour);
-  if (sq8x8_to_rank07(target) != backrank(colour)) {
+  if (sq0x88_to_rank07(target) != backrank(colour)) {
     return move_count;
   }
   sq0x88_t inc = pawn_push_increment(colour);
